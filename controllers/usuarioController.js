@@ -1,4 +1,3 @@
-// controllers/usuarioController.js
 const db = require('../db/db'); // Configuração do Knex
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
@@ -27,40 +26,40 @@ async function loginUser(req, res) {
 async function forgotPassword(req, res) {
     const { email } = req.body;
 
-    // Verificar se o usuário existe
-    const user = await db('users').where({ email }).first();
-    if (!user) {
-        return res.json({ message: 'E-mail de recuperação enviado, se o usuário existir.' });
-    }
-
-    // Gerar token de recuperação
-    const token = crypto.randomBytes(32).toString('hex');
-
-    // Armazene o token no banco de dados com expiração (exemplo: 1 hora)
-    await db('password_resets').insert({
-        email,
-        token,
-        expires_at: new Date(Date.now() + 3600000) // 1 hora
-    });
-
-    // Configurar transporte do nodemailer
-    const transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-
-    // Configurar e enviar e-mail
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: 'Recuperação de Senha',
-        text: `Use este link para redefinir sua senha: http://localhost:3000/redefinir-senha?token=${token}`,
-    };
-
     try {
+        // Verificar se o usuário existe
+        const user = await db('users').where({ email }).first();
+        if (!user) {
+            return res.json({ message: 'E-mail de recuperação enviado, se o usuário existir.' });
+        }
+
+        // Gerar token de recuperação
+        const token = crypto.randomBytes(32).toString('hex');
+
+        // Armazene o token no banco de dados com expiração (exemplo: 1 hora)
+        await db('password_resets').insert({
+            email,
+            token,
+            expires_at: new Date(Date.now() + 3600000) // 1 hora
+        });
+
+        // Configurar transporte do nodemailer
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+
+        // Configurar e enviar e-mail
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Recuperação de Senha',
+            text: `Use este link para redefinir sua senha: http://localhost:3000/redefinir-senha?token=${token}`,
+        };
+
         await transporter.sendMail(mailOptions);
         res.json({ message: 'E-mail de recuperação enviado, se o usuário existir.' });
     } catch (error) {
@@ -104,27 +103,21 @@ async function resetPassword(req, res) {
 }
 
 async function updateProfile(req, res) {
-    console.log("Entrando na função updateProfile");
     const { email, nome } = req.body;
     try {
         const user = await db('users').where({ email }).first();
-        console.log("Usuário encontrado:", user);
 
         if (!user) {
-            console.log("Usuário não encontrado");
             return res.status(404).json({ message: 'Usuário não encontrado' });
         }
 
         await db('users').where({ email }).update({ nome });
-        console.log("Perfil atualizado com sucesso");
         res.json({ message: 'Perfil atualizado com sucesso.' });
     } catch (error) {
         console.error("Erro ao atualizar perfil:", error);
         res.status(500).json({ error: 'Erro ao atualizar o perfil' });
     }
 }
-
-
 
 async function getAllUsers(req, res) {
     try {

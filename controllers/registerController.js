@@ -1,4 +1,3 @@
-// controllers/registerController.js
 const bcrypt = require('bcrypt');
 const db = require('../db/db'); // Importa a conexão com o banco de dados MySQL usando Knex
 

@@ -3,7 +3,7 @@ const db = require('../db/db');
 // Função para obter todas as produtoras
 async function getAllProdutoras(req, res) {
     try {
-        const produtoras = await db('produtoras');
+        const produtoras = await db('produtoras').whereNull('deleted_at');
         res.json(produtoras);
     } catch (error) {
         console.error("Erro ao buscar produtoras:", error);
@@ -19,6 +19,8 @@ async function createProdutora(req, res) {
         const [id] = await db('produtoras').insert({
             nome,
             descricao,
+            created_at: new Date(),
+            updated_at: new Date()
         });
 
         res.status(201).json({ id });
@@ -33,7 +35,7 @@ async function getProdutoraById(req, res) {
     const { id } = req.params;
 
     try {
-        const produtora = await db('produtoras').where({ id }).first();
+        const produtora = await db('produtoras').where({ id }).whereNull('deleted_at').first();
         if (produtora) {
             res.json(produtora);
         } else {
@@ -54,6 +56,7 @@ async function updateProdutora(req, res) {
         const updated = await db('produtoras').where({ id }).update({
             nome,
             descricao,
+            updated_at: new Date()
         });
 
         if (updated) {
@@ -72,7 +75,9 @@ async function deleteProdutora(req, res) {
     const { id } = req.params;
 
     try {
-        const deleted = await db('produtoras').where({ id }).del();
+        const deleted = await db('produtoras').where({ id }).update({
+            deleted_at: new Date()
+        });
 
         if (deleted) {
             res.json({ message: 'Produtora deletada com sucesso' });

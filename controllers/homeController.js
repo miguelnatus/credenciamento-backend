@@ -6,7 +6,7 @@ exports.getAllProdutos = async (req, res) => {
     const produtos = await db('produtos').select('*');
     res.json(produtos);
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao buscar produtos:", error);
     res.status(500).json({ error: 'Erro ao buscar produtos' });
   }
 };
@@ -15,10 +15,17 @@ exports.getAllProdutos = async (req, res) => {
 exports.createProduto = async (req, res) => {
   const { nome, descricao, preco, quantidade } = req.body;
   try {
-    const [id] = await db('produtos').insert({ nome, descricao, preco, quantidade });
+    const [id] = await db('produtos').insert({ 
+      nome, 
+      descricao, 
+      preco, 
+      quantidade, 
+      created_at: new Date(), 
+      updated_at: new Date() 
+    });
     res.status(201).json({ id, nome, descricao, preco, quantidade });
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao criar produto:", error);
     res.status(500).json({ error: 'Erro ao criar produto' });
   }
 };

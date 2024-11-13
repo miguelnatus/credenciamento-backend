@@ -2,10 +2,24 @@ const bcrypt = require('bcrypt');
 const db = require('../db/db');
 
 async function createCompany(req, res) {
-    
-    try{
+    const {
+        nome,
+        tipo,
+        imagem,
+        cnpj,
+        responsavel,
+        email,
+        telefone,
+        max_pessoas,
+        max_veiculos
+    } = req.body;
+
+    const created_at = new Date();
+    const updated_at = new Date();
+    const deleted_at = null; // ou outra lógica para definir o valor inicial
+
+    try {
         const [newCompanyId] = await db('empresas').insert({ 
-            id,
             nome,
             tipo,
             imagem,
@@ -21,10 +35,9 @@ async function createCompany(req, res) {
         });
 
         res.status(201).json({ message: 'Empresa criada com sucesso', company_id: newCompanyId });
-    }
-    catch(error){
+    } catch (error) {
         console.error("Erro ao criar empresa:", error);
-        res.status(500).json({ error: 'Erro ao criar a empresa' });
+        res.status(500).json({ message: 'Erro ao criar empresa', error: error.message });
     }
 }
 
