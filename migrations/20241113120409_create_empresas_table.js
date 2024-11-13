@@ -3,13 +3,17 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  
+    return knex.schema.createTable('empresas', function(table) {
+        table.increments('id').primary();
+        table.string('nome').notNullable();
+        table.string('cnpj').notNullable();
+        table.string('endereco');
+        table.string('telefone');
+        table.string('email');
+        table.timestamps(true, true);
+    });
 };
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
 exports.down = function(knex) {
-  
+    return knex.schema.dropTable('empresas');
 };
