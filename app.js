@@ -22,6 +22,7 @@ const loginRoutes = require('./routes/login');
 const registerRoutes = require('./routes/register');
 const usuarioRoutes = require('./routes/usuario');
 const eventoRoutes = require('./routes/evento');
+const produtoraRoutes = require('./routes/produtora'); // Certifique-se de que o nome do arquivo está correto
 
 // Rotas sem autenticação
 app.use('/api/register', registerRoutes);
@@ -31,8 +32,7 @@ app.use('/api/login', loginRoutes);
 const authenticateToken = require('./middleware/authenticateToken');
 app.use('/api/usuario', authenticateToken, usuarioRoutes);
 app.use('/api/eventos', authenticateToken, eventoRoutes);
-
-
+app.use('/api/produtoras', authenticateToken, produtoraRoutes); // Certifique-se de que a rota está correta
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
