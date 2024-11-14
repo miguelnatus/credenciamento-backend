@@ -3,9 +3,9 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  return knex.schema.hasTable('usuarios').then(function(exists) {
+  return knex.schema.hasTable('users').then(function(exists) {
     if (!exists) {
-      return knex.schema.createTable('usuarios', function(table) {
+      return knex.schema.createTable('users', function(table) {
         table.increments('id').primary();
         table.string('nome').notNullable();
         table.string('email').notNullable().unique();
@@ -17,5 +17,5 @@ exports.up = function(knex) {
 };
 
 exports.down = function(knex) {
-  return knex.schema.dropTableIfExists('usuarios');
+  return knex.schema.dropTableIfExists('users');
 };
