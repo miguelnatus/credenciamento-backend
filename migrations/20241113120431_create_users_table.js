@@ -11,6 +11,7 @@ exports.up = function(knex) {
         table.string('email').notNullable().unique();
         table.string('senha').notNullable();
         table.timestamps(true, true);
+        table.timestamp('deleted_at').nullable();
       });
     }
   });

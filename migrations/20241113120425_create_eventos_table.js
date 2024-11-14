@@ -15,6 +15,7 @@ exports.up = function(knex) {
         table.datetime('fim_credenciamento');
         table.string('grupo');
         table.timestamps(true, true);
+        table.timestamp('deleted_at').nullable();
       });
     }
   });

@@ -13,6 +13,7 @@ exports.up = function(knex) {
           table.string('telefone');
           table.string('email');
           table.timestamps(true, true);
+          table.timestamp('deleted_at').nullable();
         });
       }
     });

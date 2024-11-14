@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     }
 
     // Verificar se a senha está correta
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await bcrypt.compare(password, user.senha);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }

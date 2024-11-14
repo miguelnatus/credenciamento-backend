@@ -24,6 +24,7 @@ const usuarioRoutes = require('./routes/usuario');
 const eventoRoutes = require('./routes/evento');
 const produtoraRoutes = require('./routes/produtora');
 const empresasRoutes = require('./routes/empresa');
+const setorRoutes = require('./routes/setor');
 
 // Rotas sem autenticação
 app.use('/api/register', registerRoutes);
@@ -35,6 +36,7 @@ app.use('/api/usuario', authenticateToken, usuarioRoutes);
 app.use('/api/eventos', authenticateToken, eventoRoutes);
 app.use('/api/produtoras', authenticateToken, produtoraRoutes); 
 app.use('/api/empresas', authenticateToken, empresasRoutes);
+app.use('/api/setores', authenticateToken, setorRoutes);
 
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
