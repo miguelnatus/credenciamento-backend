@@ -3,13 +3,10 @@
  * @returns { Promise<void> }
  */
 exports.up = function(knex) {
-  return knex.schema.createTable('setores', function(table) {
+  return knex.schema.createTable('zonas', function(table) {
     table.increments('id').primary();
     table.string('nome').notNullable();
-    table.decimal('valor', 10, 2).nullable().defaultTo(null);
-    table.string('tipo').nullable().defaultTo(null);
-    table.time('hora_entrada').notNullable();
-    table.time('hora_saida').notNullable();
+    table.string('descricao').nullable();
     table.timestamps(true, true);
   });
 };
@@ -19,5 +16,5 @@ exports.up = function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = function(knex) {
-  return knex.schema.dropTable('setores');
+  return knex.schema.dropTable('zonas');
 };
