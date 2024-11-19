@@ -1,7 +1,8 @@
 const express = require('express');
+const router = express.Router();
 const pessoaController = require('../controllers/pessoaController');
 
-const router = express.Router();
+
 
 router.post('/', pessoaController.createPessoa);
 router.get('/', pessoaController.getAllPessoas);

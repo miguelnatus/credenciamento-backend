@@ -1,4 +1,3 @@
-const bcrypt = require('bcrypt');
 const db = require('../db/db');
 
 async function createPessoa(req, res) {
