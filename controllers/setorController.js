@@ -13,13 +13,12 @@ async function getAllSetores(req, res) {
 
 // Função para criar um novo setor
 async function createSetor(req, res) {
-    const { nome, valor, produtora_id, tipo, hora_entrada, hora_saida } = req.body;
+    const { nome, valor, tipo, hora_entrada, hora_saida } = req.body;
 
     try {
         const [id] = await db('setores').insert({
             nome,
             valor,
-            produtora_id,
             tipo,
             hora_entrada,
             hora_saida
@@ -52,7 +51,7 @@ async function getSetorById(req, res) {
 // Função para atualizar um setor pelo ID
 async function updateSetor(req, res) {
     const { id } = req.params;
-    const { nome, valor, produtora_id, tipo, hora_entrada, hora_saida } = req.body;
+    const { nome, valor, tipo, hora_entrada, hora_saida } = req.body;
 
     try {
         const updated = await db('setores')
@@ -60,7 +59,6 @@ async function updateSetor(req, res) {
             .update({
                 nome,
                 valor,
-                produtora_id,
                 tipo,
                 hora_entrada,
                 hora_saida
