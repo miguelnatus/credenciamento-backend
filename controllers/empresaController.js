@@ -4,31 +4,25 @@ const db = require('../db/db');
 async function createCompany(req, res) {
     const {
         nome,
-        tipo,
-        imagem,
+        empresa_tipo_id,
         cnpj,
         responsavel,
         email,
-        telefone,
-        max_pessoas,
-        max_veiculos
+        telefone
     } = req.body;
 
     const created_at = new Date();
     const updated_at = new Date();
-    const deleted_at = null; // ou outra lógica para definir o valor inicial
+    const deleted_at = null;
 
     try {
         const [newCompanyId] = await db('empresas').insert({ 
             nome,
-            tipo,
-            imagem,
+            empresa_tipo_id,
             cnpj,
             responsavel,
             email,
             telefone,
-            max_pessoas,
-            max_veiculos,
             created_at,
             updated_at,
             deleted_at
@@ -42,45 +36,40 @@ async function createCompany(req, res) {
 }
 
 async function getAllCompanies(req, res) {
-    const { id, nome, tipo, cnpj, responsavel, email, telefone, max_pessoas, max_veiculos } = req.query; // Suporta filtros opcionais
+    const { id, nome, empresa_tipo_id, cnpj, responsavel, email, telefone } = req.query;
 
     try {
-        const query = db('empresas').whereNull('deleted_at');
+        const query = db('empresas')
+            .select('empresas.*', 'empresa_tipos.nome as tipo_nome')
+            .leftJoin('empresa_tipos', 'empresas.empresa_tipo_id', 'empresa_tipos.id')
+            .whereNull('empresas.deleted_at');
 
         if (id) {
-            query.andWhere({ id });
+            query.andWhere('empresas.id', id);
         }
 
         if (nome) {
-            query.andWhere({ nome });
+            query.andWhere('empresas.nome', nome);
         }
 
-        if (tipo) {
-            query.andWhere({ tipo });
+        if (empresa_tipo_id) {
+            query.andWhere('empresas.empresa_tipo_id', empresa_tipo_id);
         }
 
         if (cnpj) {
-            query.andWhere({ cnpj });
+            query.andWhere('empresas.cnpj', cnpj);
         }
 
         if (responsavel) {
-            query.andWhere({ responsavel });
+            query.andWhere('empresas.responsavel', responsavel);
         }
 
         if (email) {
-            query.andWhere({ email });
+            query.andWhere('empresas.email', email);
         }
 
         if (telefone) {
-            query.andWhere({ telefone });
-        }
-
-        if (max_pessoas) {
-            query.andWhere({ max_pessoas });
-        }
-
-        if (max_veiculos) {
-            query.andWhere({ max_veiculos });
+            query.andWhere('empresas.telefone', telefone);
         }
 
         const companies = await query;
@@ -95,7 +84,12 @@ async function getCompanyById(req, res) {
     const { id } = req.params;
 
     try {
-        const company = await db('empresas').where({ id }).whereNull('deleted_at').first();
+        const company = await db('empresas')
+            .select('empresas.*', 'empresa_tipos.nome as tipo_nome')
+            .leftJoin('empresa_tipos', 'empresas.empresa_tipo_id', 'empresa_tipos.id')
+            .where('empresas.id', id)
+            .whereNull('empresas.deleted_at')
+            .first();
 
         if (!company) {
             return res.status(404).json({ message: 'Empresa não encontrada' });
@@ -110,21 +104,18 @@ async function getCompanyById(req, res) {
 
 async function updateCompany(req, res) {
     const { id } = req.params;
-    const { nome, tipo, imagem, cnpj, responsavel, email, telefone, max_pessoas, max_veiculos } = req.body;
+    const { nome, empresa_tipo_id, cnpj, responsavel, email, telefone } = req.body;
 
     try {
         const updated = await db('empresas')
             .where({ id })
             .update({
                 nome,
-                tipo,
-                imagem,
+                empresa_tipo_id,
                 cnpj,
                 responsavel,
                 email,
                 telefone,
-                max_pessoas,
-                max_veiculos,
                 updated_at: new Date()
             });
 

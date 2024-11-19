@@ -8,10 +8,12 @@ exports.up = function(knex) {
         return knex.schema.createTable('empresas', function(table) {
           table.increments('id').primary();
           table.string('nome').notNullable();
-          table.string('cnpj').notNullable();
-          table.string('endereco');
-          table.string('telefone');
-          table.string('email');
+          table.integer('empresa_tipo_id').unsigned().references('id').inTable('empresa_tipos');
+          table.string('cnpj').nullable();
+          table.string('endereco').nullable();
+          table.string('telefone').nullable();
+          table.string('email').nullable();
+          table.string('responsavel').nullable();
           table.timestamps(true, true);
           table.timestamp('deleted_at').nullable();
         });
