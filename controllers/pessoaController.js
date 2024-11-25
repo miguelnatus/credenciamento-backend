@@ -93,7 +93,7 @@ async function updatePessoa(req, res) {
                 cpf,
                 passaporte,
                 assinatura,
-                funcao,
+                funcao, 
                 imagem,
                 imagem_base64,
                 email,
