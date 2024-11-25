@@ -1,19 +1,16 @@
-const bcrypt = require('bcrypt');
 const db = require('../db/db');
 
 async function createEvent(req, res) {
-    const { produtora_id, grupo_id, nome, local, imagem, data_do_evento, inicio_do_credenciamento, fim_do_credenciamento, descricao } = req.body;
+    const { grupo_id, nome, local, data_evento, inicio_credenciamento, fim_credenciamento, descricao } = req.body;
     
     try {
         const [newEventId] = await db('eventos').insert({
-            produtora_id,
             grupo_id,
             nome,
             local,
-            imagem,
-            data_do_evento,
-            inicio_do_credenciamento,
-            fim_do_credenciamento,
+            data_evento,
+            inicio_credenciamento,
+            fim_credenciamento,
             descricao,
             created_at: new Date(),
             updated_at: new Date()
@@ -28,14 +25,10 @@ async function createEvent(req, res) {
 
 // Função para listar eventos
 async function getAllEvents(req, res) {
-    const { produtora_id, grupo_id } = req.query; // Suporta filtros opcionais
+    const { grupo_id } = req.query; // Suporta filtros opcionais
 
     try {
         const query = db('eventos').whereNull('deleted_at');
-
-        if (produtora_id) {
-            query.andWhere({ produtora_id });
-        }
 
         if (grupo_id) {
             query.andWhere({ grupo_id });
@@ -70,20 +63,18 @@ async function getEventById(req, res) {
 // Função para atualizar um evento
 async function updateEvent(req, res) {
     const { id } = req.params;
-    const { produtora_id, grupo_id, nome, local, imagem, data_do_evento, inicio_do_credenciamento, fim_do_credenciamento, descricao } = req.body;
+    const { grupo_id, nome, local, data_evento, inicio_credenciamento, fim_credenciamento, descricao } = req.body;
 
     try {
         const updated = await db('eventos')
             .where({ id })
             .update({
-                produtora_id,
                 grupo_id,
                 nome,
                 local,
-                imagem,
-                data_do_evento,
-                inicio_do_credenciamento,
-                fim_do_credenciamento,
+                data_evento,
+                inicio_credenciamento,
+                fim_credenciamento,
                 descricao,
                 updated_at: new Date()
             });
