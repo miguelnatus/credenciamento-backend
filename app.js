@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const path = require('path');
+const routes = require('./routes'); // Importa o index.js automaticamente
 const app = express();
 const PORT = process.env.PORT || 8000;
 
@@ -15,40 +16,19 @@ app.use(cors({
   credentials: true,
 }));
 
+// Middleware para parse de JSON
 app.use(express.json());
 
-// Importar e configurar as rotas
-const loginRoutes = require('./routes/login');
-const registerRoutes = require('./routes/register');
-const usuarioRoutes = require('./routes/usuario');
-const eventoRoutes = require('./routes/evento');
-const produtoraRoutes = require('./routes/produtora');
-const empresasRoutes = require('./routes/empresa');
-const setorRoutes = require('./routes/setor');
-const zonaRoutes = require('./routes/zona');
-const credencialRoutes = require('./routes/credenciais');
-const credencialEmpresaRoutes = require('./routes/credencialEmpresa');
-const credencialEmpresaZonasRoutes = require('./routes/credencialEmpresaZonas');
-const pessoaRoutes = require('./routes/pessoa');
+// Usa as rotas centralizadas no arquivo index.js
+app.use('/api', routes);
 
-// Rotas sem autenticação
-app.use('/api/register', registerRoutes);
-app.use('/api/login', loginRoutes);
+// Middleware para tratamento de erros
+app.use((err, req, res, next) => {
+  console.error('Erro:', err.message);
+  res.status(err.status || 500).json({ error: 'Erro interno do servidor' });
+});
 
-// Rotas com autenticação
-const authenticateToken = require('./middleware/authenticateToken');
-app.use('/api/usuario', authenticateToken, usuarioRoutes);
-app.use('/api/eventos', authenticateToken, eventoRoutes);
-app.use('/api/produtoras', authenticateToken, produtoraRoutes); 
-app.use('/api/empresas', authenticateToken, empresasRoutes);
-app.use('/api/pessoas', authenticateToken, pessoaRoutes);
-app.use('/api/setores', authenticateToken, setorRoutes);
-app.use('/api/zonas', authenticateToken, zonaRoutes);
-app.use('/api/credenciais', authenticateToken, credencialRoutes);
-app.use('/api/credencialempresa', authenticateToken, credencialEmpresaRoutes);
-app.use('/api/credencialempresazonas', authenticateToken, credencialEmpresaZonasRoutes);
-
-
+// Inicia o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
