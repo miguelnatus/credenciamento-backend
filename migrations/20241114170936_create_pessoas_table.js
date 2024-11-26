@@ -19,6 +19,7 @@ exports.up = function(knex) {
     table.text('endereco').nullable();
     table.text('observacao').nullable();
     table.timestamps(true, true);
+    table.date('deleted_at').nullable();
   });
 };
 

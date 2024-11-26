@@ -28,7 +28,8 @@ async function createPessoa(req, res) {
             documentos_tft,
             ingresso,
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
+            deleted_at: null
         });
         
         res.status(201).json({ message: 'Pessoa criada com sucesso', pessoa_id: newPessoaId });
@@ -83,6 +84,7 @@ async function updatePessoa(req, res) {
     try {
         const updated = await db('pessoas')
             .where({ id })
+            .whereNull('deleted_at')
             .update({
                 produtora_id,
                 nome,
@@ -125,7 +127,13 @@ async function deletePessoa(req, res) {
     const { id } = req.params;
 
     try {
-        const deleted = await db('pessoas').where({ id }).update({ deleted_at: new Date() });
+        const deleted = await db('pessoas')
+            .where({ id })
+            .whereNull('deleted_at')
+            .update({ 
+                deleted_at: new Date(),
+                updated_at: new Date()
+            });
 
         if (!deleted) {
             return res.status(404).json({ message: 'Pessoa não encontrada para exclusão' });
@@ -138,10 +146,26 @@ async function deletePessoa(req, res) {
     }
 }
 
+async function verificar(req, res) {
+    const { documento, tipo } = req.params;
+    
+    let query = db('pessoas').whereNull('deleted_at');
+    
+    if (tipo === 'cpf') {
+        query = query.where({ cpf: documento });
+    } else if (tipo === 'passaporte') {
+        query = query.where({ passaporte: documento });
+    }
+    
+    const pessoa = await query.first();
+    res.json({ exists: !!pessoa });
+}
+
 module.exports = {
     createPessoa,
     getAllPessoas,
     getPessoaById,
     updatePessoa,
-    deletePessoa
+    deletePessoa,
+    verificar
 };

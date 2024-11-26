@@ -4,7 +4,7 @@ const credencialEmpresaController = require('../controllers/credencialEmpresaCon
 
 router.post('/', credencialEmpresaController.createCredencialEmpresa);
 router.get('/', credencialEmpresaController.getAllCredenciaisEmpresa);
-router.get('/:id', credencialEmpresaController.getCredencialEmpresaById);   
+router.get('/:empresa_id/:evento_id', credencialEmpresaController.searchCredenciaisEmpresa);
 router.put('/:id', credencialEmpresaController.updateCredencialEmpresa);
 router.delete('/:id', credencialEmpresaController.deleteCredencialEmpresa);
 

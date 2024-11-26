@@ -28,10 +28,12 @@ const setorRoutes = require('./routes/setor');
 const zonaRoutes = require('./routes/zona');
 const credencialRoutes = require('./routes/credenciais');
 const credencialEmpresaRoutes = require('./routes/credencialEmpresa');
+const credencialEmpresaZonasRoutes = require('./routes/credencialEmpresaZonas');
+const pessoaRoutes = require('./routes/pessoa');
 
 // Rotas sem autenticação
 app.use('/api/register', registerRoutes);
-app.use('/api/login', loginRoutes); 
+app.use('/api/login', loginRoutes);
 
 // Rotas com autenticação
 const authenticateToken = require('./middleware/authenticateToken');
@@ -39,10 +41,12 @@ app.use('/api/usuario', authenticateToken, usuarioRoutes);
 app.use('/api/eventos', authenticateToken, eventoRoutes);
 app.use('/api/produtoras', authenticateToken, produtoraRoutes); 
 app.use('/api/empresas', authenticateToken, empresasRoutes);
+app.use('/api/pessoas', authenticateToken, pessoaRoutes);
 app.use('/api/setores', authenticateToken, setorRoutes);
 app.use('/api/zonas', authenticateToken, zonaRoutes);
 app.use('/api/credenciais', authenticateToken, credencialRoutes);
 app.use('/api/credencialempresa', authenticateToken, credencialEmpresaRoutes);
+app.use('/api/credencialempresazonas', authenticateToken, credencialEmpresaZonasRoutes);
 
 
 app.listen(PORT, () => {
