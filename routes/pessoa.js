@@ -10,6 +10,8 @@ router.get('/:id', pessoaController.getPessoaById);
 router.put('/:id', pessoaController.updatePessoa);
 router.delete('/:id', pessoaController.deletePessoa);
 
+router.get('/empresa/:empresaId', pessoaController.getPessoasByEmpresaId);
+
 router.get('/verificar/:documento/:tipo', pessoaController.verificar);
 
 module.exports = router;

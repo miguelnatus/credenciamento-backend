@@ -6,13 +6,13 @@ exports.up = function(knex) {
   return knex.schema.createTable('pessoas', function(table) {
     table.increments('id').primary();
     table.string('nome', 100).notNullable();
-    table.string('sobrenome', 100).notNullable();
-    table.string('nome_credencial', 100).notNullable();
-    table.string('cpf', 14).notNullable().unique();
-    table.string('passaporte', 20);
-    table.string('email').notNullable();
-    table.string('telefone', 20).notNullable();
-    table.date('data_nascimento').notNullable();
+    table.string('sobrenome', 100).nullable();
+    table.string('nome_credencial', 100).nullable();
+    table.string('cpf', 14).nullable().unique();
+    table.string('passaporte', 20).nullable().unique();
+    table.string('email').nullable();
+    table.string('telefone', 20).nullable();
+    table.date('data_nascimento').nullable();
     table.text('assinatura').nullable();
     table.text('foto').nullable();
     table.string('tamanho', 10).nullable();

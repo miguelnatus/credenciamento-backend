@@ -1,35 +1,33 @@
 const db = require('../db/db');
 
 async function createPessoa(req, res) {
-    const { produtora_id, nome, sobrenome, nome_completo, nome_impressao, rg, cpf, passaporte, assinatura, funcao, imagem, imagem_base64, email, telefone, nascimento, tamanho, endereco, observacao, empresa_nome, documentos, documentos_tft, ingresso } = req.body;
+    console.log(req.body);
+
+    const { nome, sobrenome, nome_credencial, cpf, passaporte, email, telefone, data_nascimento, assinatura, foto, tamanho, endereco, observacao } = req.body;
     
     try {
         const [newPessoaId] = await db('pessoas').insert({
-            produtora_id,
             nome,
             sobrenome,
-            nome_completo,
-            nome_impressao,
-            rg,
+            nome_credencial,
             cpf,
             passaporte,
-            assinatura,
-            funcao,
-            imagem,
-            imagem_base64,
             email,
             telefone,
-            nascimento,
+            data_nascimento,
+            assinatura,
+            foto,
             tamanho,
             endereco,
             observacao,
-            empresa_nome,
-            documentos,
-            documentos_tft,
-            ingresso,
             created_at: new Date(),
             updated_at: new Date(),
             deleted_at: null
+        });
+
+        await db('empresa_pessoa').insert({
+            empresa_id: req.body.empresa_id,
+            pessoa_id: newPessoaId
         });
         
         res.status(201).json({ message: 'Pessoa criada com sucesso', pessoa_id: newPessoaId });
@@ -41,15 +39,8 @@ async function createPessoa(req, res) {
 
 // Função para listar pessoas
 async function getAllPessoas(req, res) {
-    const { produtora_id } = req.query; // Suporta filtros opcionais
-
     try {
         const query = db('pessoas').whereNull('deleted_at');
-
-        if (produtora_id) {
-            query.andWhere({ produtora_id });
-        }
-
         const pessoas = await query;
         res.json(pessoas);
     } catch (error) {
@@ -57,6 +48,25 @@ async function getAllPessoas(req, res) {
         res.status(500).json({ error: 'Erro ao buscar pessoas' });
     }
 }
+
+// Função para listar pessoas por empresa
+async function getPessoasByEmpresaId(req, res) {
+    const { empresaId } = req.params;
+    
+    try {
+        const pessoas = await db('pessoas')
+            .join('empresa_pessoa', 'pessoas.id', '=', 'empresa_pessoa.pessoa_id')
+            .where('empresa_pessoa.empresa_id', empresaId)
+            .whereNull('pessoas.deleted_at')
+            .select('pessoas.*');
+
+        res.json(pessoas);
+    } catch (error) {
+        console.error("Erro ao buscar pessoas da empresa:", error);
+        res.status(500).json({ error: 'Erro ao buscar pessoas da empresa' });
+    }
+}
+
 
 // Função para obter uma pessoa específica
 async function getPessoaById(req, res) {
@@ -79,35 +89,26 @@ async function getPessoaById(req, res) {
 // Função para atualizar uma pessoa
 async function updatePessoa(req, res) {
     const { id } = req.params;
-    const { produtora_id, nome, sobrenome, nome_completo, nome_impressao, rg, cpf, passaporte, assinatura, funcao, imagem, imagem_base64, email, telefone, nascimento, tamanho, endereco, observacao, empresa_nome, documentos, documentos_tft, ingresso } = req.body;
+    const { nome, sobrenome, nome_credencial, cpf, passaporte, email, telefone, data_nascimento, assinatura, foto, tamanho, endereco, observacao } = req.body;
 
     try {
         const updated = await db('pessoas')
             .where({ id })
             .whereNull('deleted_at')
             .update({
-                produtora_id,
                 nome,
                 sobrenome,
-                nome_completo,
-                nome_impressao,
-                rg,
+                nome_credencial,
                 cpf,
                 passaporte,
-                assinatura,
-                funcao, 
-                imagem,
-                imagem_base64,
                 email,
                 telefone,
-                nascimento,
+                data_nascimento,
+                assinatura,
+                foto,
                 tamanho,
                 endereco,
                 observacao,
-                empresa_nome,
-                documentos,
-                documentos_tft,
-                ingresso,
                 updated_at: new Date()
             });
 
@@ -167,5 +168,6 @@ module.exports = {
     getPessoaById,
     updatePessoa,
     deletePessoa,
-    verificar
+    verificar,
+    getPessoasByEmpresaId
 };
