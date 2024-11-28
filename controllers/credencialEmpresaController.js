@@ -242,10 +242,33 @@ async function deleteCredencialEmpresa(req, res) {
     }
 }
 
+// Função para mostrar os setores disponíveis para credenciar
+async function mostraSetoresDisponiveis(req, res) {
+    console.log("Dados recebidos:", req.params);
+    const { empresa_id, evento_id } = req.params;
+    
+    try {
+        const setores = await db('credencial_empresa_setor')
+            .select('credencial_empresa_setor.id as ces_id', 'setores.nome', 'setores.id as setor_id')
+            .join('setores', 'credencial_empresa_setor.setor_id', '=', 'setores.id')
+            .where({
+                'credencial_empresa_setor.empresa_id': empresa_id,
+                'credencial_empresa_setor.evento_id': evento_id
+            })
+            .whereNull('credencial_empresa_setor.deleted_at');
+
+        res.json(setores);
+    } catch (error) {
+        console.error("Erro ao buscar setores:", error);
+        res.status(500).json({ error: 'Erro ao buscar setores disponíveis' });
+    }
+}
+
 module.exports = {
     createCredencialEmpresa,
     getAllCredenciaisEmpresa,
     searchCredenciaisEmpresa,
     updateCredencialEmpresa,
-    deleteCredencialEmpresa
+    deleteCredencialEmpresa,
+    mostraSetoresDisponiveis
 };

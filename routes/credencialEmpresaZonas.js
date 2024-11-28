@@ -8,4 +8,6 @@ router.get('/:ces_id', credencialEmpresaZonaController.searchCredenciaisEmpresaZ
 router.put('/:id', credencialEmpresaZonaController.updateCredencialEmpresaZonas);
 router.delete('/:id', credencialEmpresaZonaController.deleteCredencialEmpresaZonas);
 
+router.get('/mostraZonasDisponiveis/:ces_id', credencialEmpresaZonaController.mostraZonasDisponiveis);
+
 module.exports = router;

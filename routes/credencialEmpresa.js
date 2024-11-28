@@ -8,4 +8,6 @@ router.get('/:empresa_id/:evento_id', credencialEmpresaController.searchCredenci
 router.put('/:id', credencialEmpresaController.updateCredencialEmpresa);
 router.delete('/:id', credencialEmpresaController.deleteCredencialEmpresa);
 
+router.get('/mostraSetoresDisponiveis/:empresa_id/:evento_id', credencialEmpresaController.mostraSetoresDisponiveis);
+
 module.exports = router;

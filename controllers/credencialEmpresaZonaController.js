@@ -10,34 +10,72 @@ async function createCredencialEmpresaZonas(req, res) {
             return res.status(400).json({ error: 'Os dados devem ser um array de zonas' });
         }
 
+        // Processa cada zona do array
         const resultados = await Promise.all(
             zonas.map(async (zona) => {
                 const { ces_id, zona_id, limite } = zona;
 
-                if (!ces_id || !zona_id || !limite) {
+                if (!ces_id || !zona_id) {
                     throw new Error('Dados incompletos para uma ou mais zonas');
                 }
 
-                const [id] = await db('credencial_empresa_zona').insert({
-                    ces_id,
-                    zona_id,
-                    limite,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                });
+                // Verifica se já existe um registro para essa combinação ces_id/zona_id
+                const existente = await db('credencial_empresa_zona')
+                    .where({ 
+                        ces_id: ces_id,
+                        zona_id: zona_id
+                    })
+                    .first();
 
-                return id;
+                // Se limite for zero ou nulo, deleta o registro se existir
+                if (!limite || limite === 0) {
+                    if (existente) {
+                        await db('credencial_empresa_zona')
+                            .where({ 
+                                ces_id: ces_id,
+                                zona_id: zona_id 
+                            })
+                            .delete();
+                        return { acao: 'deletado', ces_id, zona_id };
+                    }
+                    return { acao: 'ignorado', ces_id, zona_id };
+                }
+
+                // Atualiza ou cria novo registro
+                if (existente) {
+                    // Update
+                    await db('credencial_empresa_zona')
+                        .where({ 
+                            ces_id: ces_id,
+                            zona_id: zona_id
+                        })
+                        .update({
+                            limite: limite,
+                            updated_at: new Date()
+                        });
+                    return { acao: 'atualizado', id: existente.id, ces_id, zona_id };
+                } else {
+                    // Insert
+                    const [id] = await db('credencial_empresa_zona').insert({
+                        ces_id,
+                        zona_id,
+                        limite,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                    return { acao: 'criado', id, ces_id, zona_id };
+                }
             })
         );
 
-        res.status(201).json({ 
-            ids: resultados,
-            message: 'Zonas criadas com sucesso'
+        res.status(200).json({ 
+            resultados,
+            message: 'Zonas processadas com sucesso'
         });
 
     } catch (error) {
-        console.error("Erro ao criar zonas:", error);
-        res.status(500).json({ error: 'Erro ao criar zonas: ' + error.message });
+        console.error("Erro ao processar zonas:", error);
+        res.status(500).json({ error: 'Erro ao processar zonas: ' + error.message });
     }
 }
 
@@ -129,10 +167,30 @@ async function deleteCredencialEmpresaZonas(req, res) {
     }
 }
 
+// Função para buscar zonas disponíveis para uma empresa, evento e setor
+async function mostraZonasDisponiveis(req, res) {
+    console.log("Dados recebidos:", req.params);
+    const { ces_id } = req.params;
+    
+    try {
+        const zonas = await db('credencial_empresa_zona')
+            .select('zonas.id', 'zonas.nome', 'credencial_empresa_zona.id as ces_id') 
+            .join('zonas', 'credencial_empresa_zona.zona_id', '=', 'zonas.id')
+            .where('credencial_empresa_zona.ces_id', ces_id)
+            .whereNull('credencial_empresa_zona.deleted_at');
+
+        res.json(zonas);
+    } catch (error) {
+        console.error("Erro ao buscar zonas:", error);
+        res.status(500).json({ error: 'Erro ao buscar zonas disponíveis' });
+    }
+}
+
 module.exports = {
     createCredencialEmpresaZonas,
     getAllCredenciaisEmpresaZonas,
     searchCredenciaisEmpresaZonas,
     updateCredencialEmpresaZonas,
-    deleteCredencialEmpresaZonas
+    deleteCredencialEmpresaZonas,
+    mostraZonasDisponiveis
 };
