@@ -27,6 +27,8 @@ const credencialEmpresaRoutes = require('./credencialEmpresa');
 const credencialEmpresaZonaRoutes = require('./credencialEmpresaZonas');
 const pessoaRoutes = require('./pessoa');
 const refreshTokenRoutes = require('./refresh-token');
+const buscaRoutes = require('./busca');
+const empresaDocumentoRoutes = require('./empresaDocumento');
 
 // Rota inicial para verificar a API
 router.get('/', (req, res) => {
@@ -50,6 +52,8 @@ router.use('/credencialzona', authenticateToken, credencialZonaRoutes);
 router.use('/credencialempresa', authenticateToken, credencialEmpresaRoutes);
 router.use('/credencialempresazona', authenticateToken, credencialEmpresaZonaRoutes);
 router.use('/pessoas', authenticateToken, pessoaRoutes);
+router.use('/busca', authenticateToken, buscaRoutes);
+router.use('/empresadocumento', authenticateToken, empresaDocumentoRoutes);
 
 module.exports = router;
 
