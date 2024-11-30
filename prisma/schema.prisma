@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model credenciais {
+  id                Int                 @id @default(autoincrement()) @db.UnsignedInt
+  pessoa_id         Int?                @db.UnsignedInt
+  veiculo_id        Int?                @db.UnsignedInt
+  evento_id         Int                 @db.UnsignedInt
+  empresa_id        Int                 @db.UnsignedInt
+  setor_id          Int                 @db.UnsignedInt
+  status_id         Int?                @db.UnsignedInt
+  impresso          DateTime?           @db.Timestamp(0)
+  retirado          DateTime?           @db.Timestamp(0)
+  checkin           DateTime?           @db.Timestamp(0)
+  checkout          DateTime?           @db.Timestamp(0)
+  created_at        DateTime            @default(now()) @db.Timestamp(0)
+  updated_at        DateTime            @default(now()) @db.Timestamp(0)
+  deleted_at        DateTime?           @db.Timestamp(0)
+  empresas          empresas            @relation(fields: [empresa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_empresa_id_foreign")
+  eventos           eventos             @relation(fields: [evento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_evento_id_foreign")
+  pessoas           pessoas?            @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_pessoa_id_foreign")
+  setores           setores             @relation(fields: [setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_setor_id_foreign")
+  credencial_status credencial_status?  @relation(fields: [status_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_status_id_foreign")
+  veiculos          veiculos?           @relation(fields: [veiculo_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credenciais_veiculo_id_foreign")
+  credencial_codigo credencial_codigo[]
+  credencial_zona   credencial_zona[]
+
+  @@unique([pessoa_id, evento_id, empresa_id, setor_id], map: "credenciais_pessoa_id_evento_id_empresa_id_setor_id_unique")
+  @@unique([veiculo_id, evento_id, empresa_id, setor_id], map: "credenciais_veiculo_id_evento_id_empresa_id_setor_id_unique")
+  @@index([empresa_id], map: "credenciais_empresa_id_foreign")
+  @@index([evento_id], map: "credenciais_evento_id_foreign")
+  @@index([setor_id], map: "credenciais_setor_id_foreign")
+  @@index([status_id], map: "credenciais_status_id_foreign")
+}
+
+model credencial_codigo {
+  id                  Int          @id @default(autoincrement()) @db.UnsignedInt
+  codigo              String       @db.VarChar(255)
+  data_cancelamento   DateTime?    @db.Timestamp(0)
+  motivo_cancelamento String?      @db.Text
+  credencial_id       Int?         @db.UnsignedInt
+  created_at          DateTime     @default(now()) @db.Timestamp(0)
+  updated_at          DateTime     @default(now()) @db.Timestamp(0)
+  credenciais         credenciais? @relation(fields: [credencial_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_codigo_credencial_id_foreign")
+
+  @@index([credencial_id], map: "credencial_codigo_credencial_id_foreign")
+}
+
+model credencial_empresa_setor {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedInt
+  empresa_id              Int                       @db.UnsignedInt
+  setor_id                Int                       @db.UnsignedInt
+  evento_id               Int                       @db.UnsignedInt
+  limite_pessoas          Int
+  limite_veiculos         Int
+  created_at              DateTime                  @default(now()) @db.Timestamp(0)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(0)
+  deleted_at              DateTime?                 @db.Timestamp(0)
+  empresas                empresas                  @relation(fields: [empresa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_empresa_setor_empresa_id_foreign")
+  eventos                 eventos                   @relation(fields: [evento_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_empresa_setor_evento_id_foreign")
+  setores                 setores                   @relation(fields: [setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_empresa_setor_setor_id_foreign")
+  credencial_empresa_zona credencial_empresa_zona[]
+
+  @@index([empresa_id], map: "credencial_empresa_setor_empresa_id_foreign")
+  @@index([evento_id], map: "credencial_empresa_setor_evento_id_foreign")
+  @@index([setor_id], map: "credencial_empresa_setor_setor_id_foreign")
+}
+
+model credencial_empresa_zona {
+  id                       Int                      @id @default(autoincrement()) @db.UnsignedInt
+  ces_id                   Int                      @db.UnsignedInt
+  zona_id                  Int                      @db.UnsignedInt
+  limite                   Int
+  created_at               DateTime                 @default(now()) @db.Timestamp(0)
+  updated_at               DateTime                 @default(now()) @db.Timestamp(0)
+  deleted_at               DateTime?                @db.Timestamp(0)
+  credencial_empresa_setor credencial_empresa_setor @relation(fields: [ces_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_empresa_zona_ces_id_foreign")
+  zonas                    zonas                    @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_empresa_zona_zona_id_foreign")
+
+  @@unique([ces_id, zona_id], map: "credencial_empresa_zona_ces_id_zona_id_unique")
+  @@index([zona_id], map: "credencial_empresa_zona_zona_id_foreign")
+}
+
+model credencial_status {
+  id          Int           @id @default(autoincrement()) @db.UnsignedInt
+  nome        String        @db.VarChar(255)
+  descricao   String?       @db.VarChar(255)
+  created_at  DateTime      @default(now()) @db.Timestamp(0)
+  updated_at  DateTime      @default(now()) @db.Timestamp(0)
+  credenciais credenciais[]
+}
+
+model credencial_zona {
+  id            Int         @id @default(autoincrement()) @db.UnsignedInt
+  credencial_id Int         @db.UnsignedInt
+  zona_id       Int         @db.UnsignedInt
+  created_at    DateTime    @default(now()) @db.Timestamp(0)
+  updated_at    DateTime    @default(now()) @db.Timestamp(0)
+  deleted_at    DateTime?   @db.Timestamp(0)
+  credenciais   credenciais @relation(fields: [credencial_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_zona_credencial_id_foreign")
+  zonas         zonas       @relation(fields: [zona_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "credencial_zona_zona_id_foreign")
+
+  @@unique([credencial_id, zona_id], map: "credencial_zona_credencial_id_zona_id_unique")
+  @@index([zona_id], map: "credencial_zona_zona_id_foreign")
+}
+
+model empresa_pessoa {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  empresa_id Int       @db.UnsignedInt
+  pessoa_id  Int       @db.UnsignedInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+  empresas   empresas  @relation(fields: [empresa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "empresa_pessoa_empresa_id_foreign")
+  pessoas    pessoas   @relation(fields: [pessoa_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "empresa_pessoa_pessoa_id_foreign")
+
+  @@index([empresa_id], map: "empresa_pessoa_empresa_id_foreign")
+  @@index([pessoa_id], map: "empresa_pessoa_pessoa_id_foreign")
+}
+
+model empresa_tipos {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  nome       String    @db.VarChar(255)
+  descricao  String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+}
+
+model empresas {
+  id                       Int                        @id @default(autoincrement()) @db.UnsignedInt
+  nome                     String                     @db.VarChar(255)
+  cnpj                     String                     @db.VarChar(255)
+  endereco                 String?                    @db.VarChar(255)
+  telefone                 String?                    @db.VarChar(255)
+  email                    String?                    @db.VarChar(255)
+  created_at               DateTime                   @default(now()) @db.Timestamp(0)
+  updated_at               DateTime                   @default(now()) @db.Timestamp(0)
+  deleted_at               DateTime?                  @db.Timestamp(0)
+  credenciais              credenciais[]
+  credencial_empresa_setor credencial_empresa_setor[]
+  empresa_pessoa           empresa_pessoa[]
+}
+
+model evento_grupo {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  nome       String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+}
+
+model eventos {
+  id                       Int                        @id @default(autoincrement()) @db.UnsignedInt
+  nome                     String                     @db.VarChar(255)
+  descricao                String?                    @db.VarChar(255)
+  local                    String?                    @db.VarChar(255)
+  data_evento              DateTime?                  @db.Date
+  inicio_credenciamento    DateTime?                  @db.DateTime(0)
+  fim_credenciamento       DateTime?                  @db.DateTime(0)
+  grupo                    String?                    @db.VarChar(255)
+  created_at               DateTime                   @default(now()) @db.Timestamp(0)
+  updated_at               DateTime                   @default(now()) @db.Timestamp(0)
+  deleted_at               DateTime?                  @db.Timestamp(0)
+  credenciais              credenciais[]
+  credencial_empresa_setor credencial_empresa_setor[]
+}
+
+model knex_migrations {
+  id             Int       @id @default(autoincrement()) @db.UnsignedInt
+  name           String?   @db.VarChar(255)
+  batch          Int?
+  migration_time DateTime? @db.Timestamp(0)
+}
+
+model knex_migrations_lock {
+  index     Int  @id @default(autoincrement()) @db.UnsignedInt
+  is_locked Int?
+}
+
+model pessoas {
+  id              Int              @id @default(autoincrement()) @db.UnsignedInt
+  nome            String           @db.VarChar(100)
+  sobrenome       String?          @db.VarChar(100)
+  nome_credencial String?          @db.VarChar(100)
+  cpf             String?          @unique(map: "pessoas_cpf_unique") @db.VarChar(14)
+  passaporte      String?          @unique(map: "pessoas_passaporte_unique") @db.VarChar(20)
+  email           String?          @db.VarChar(255)
+  telefone        String?          @db.VarChar(20)
+  data_nascimento DateTime?        @db.Date
+  assinatura      String?          @db.Text
+  foto            String?          @db.Text
+  tamanho         String?          @db.VarChar(10)
+  endereco        String?          @db.Text
+  observacao      String?          @db.Text
+  created_at      DateTime         @default(now()) @db.Timestamp(0)
+  updated_at      DateTime         @default(now()) @db.Timestamp(0)
+  deleted_at      DateTime?        @db.Date
+  credenciais     credenciais[]
+  empresa_pessoa  empresa_pessoa[]
+}
+
+model produtoras {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  nome       String    @db.VarChar(255)
+  descricao  String?   @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+}
+
+model register {
+  id         Int      @id @default(autoincrement()) @db.UnsignedInt
+  nome       String   @db.VarChar(255)
+  email      String   @unique(map: "register_email_unique") @db.VarChar(255)
+  senha      String   @db.VarChar(255)
+  created_at DateTime @default(now()) @db.Timestamp(0)
+  updated_at DateTime @default(now()) @db.Timestamp(0)
+}
+
+model setores {
+  id                       Int                        @id @default(autoincrement()) @db.UnsignedInt
+  nome                     String                     @db.VarChar(255)
+  valor                    Decimal?                   @db.Decimal(10, 2)
+  tipo                     String?                    @db.VarChar(255)
+  hora_entrada             DateTime?                  @db.Time(0)
+  hora_saida               DateTime?                  @db.Time(0)
+  created_at               DateTime                   @default(now()) @db.Timestamp(0)
+  updated_at               DateTime                   @default(now()) @db.Timestamp(0)
+  credenciais              credenciais[]
+  credencial_empresa_setor credencial_empresa_setor[]
+}
+
+model users {
+  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  nome       String    @db.VarChar(255)
+  email      String    @unique(map: "users_email_unique") @db.VarChar(255)
+  senha      String    @db.VarChar(255)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime  @default(now()) @db.Timestamp(0)
+  deleted_at DateTime? @db.Timestamp(0)
+}
+
+model veiculos {
+  id          Int           @id @default(autoincrement()) @db.UnsignedInt
+  placa       String        @unique(map: "veiculos_placa_unique") @db.VarChar(7)
+  modelo      String        @db.VarChar(100)
+  cor         String        @db.VarChar(50)
+  ano         Int
+  created_at  DateTime      @default(now()) @db.Timestamp(0)
+  updated_at  DateTime      @default(now()) @db.Timestamp(0)
+  credenciais credenciais[]
+}
+
+model zonas {
+  id                      Int                       @id @default(autoincrement()) @db.UnsignedInt
+  nome                    String                    @db.VarChar(255)
+  descricao               String?                   @db.VarChar(255)
+  created_at              DateTime                  @default(now()) @db.Timestamp(0)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(0)
+  credencial_empresa_zona credencial_empresa_zona[]
+  credencial_zona         credencial_zona[]
+}

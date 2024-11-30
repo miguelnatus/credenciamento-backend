@@ -3,11 +3,12 @@ const nodemailer = require('nodemailer');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const axios = require('axios');
 
 const SECRET_KEY = process.env.SECRET_KEY || 'sua_chave_secreta';
 
 async function loginUser(req, res) {
-    console.log(req.body);
+    // console.log(req.body);
     const { email, senha } = req.body;
     try {
         const user = await db('users').where({ email }).first();
@@ -144,10 +145,23 @@ async function getAllUsers(req, res) {
     }
 }
 
+// Nova função para buscar dados de uma API externa
+async function fetchData(req, res) {
+    try {
+        const response = await axios.get('https://api.example.com/data');
+        console.log('Dados recebidos:', response.data);
+        res.json(response.data);
+    } catch (error) {
+        console.error('Erro ao fazer a requisição:', error);
+        res.status(500).json({ error: 'Erro ao buscar dados da API externa.' });
+    }
+}
+
 module.exports = {
     loginUser,
     forgotPassword,
     resetPassword,
     updateProfile,
     getAllUsers,
+    fetchData, // Exportar a nova função
 };
