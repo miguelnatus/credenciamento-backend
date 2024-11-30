@@ -1,7 +1,7 @@
 // db/db.js
-const knex = require('knex');
-const config = require('../knexfile');
+const { PrismaClient } = require('@prisma/client');
 
-const db = knex(config.development);
+// Inicializa o Prisma Client
+const prisma = new PrismaClient();
 
-module.exports = db;
+module.exports = prisma;
