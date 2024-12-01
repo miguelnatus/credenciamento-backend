@@ -1,95 +1,80 @@
-const bcrypt = require('bcrypt');
-const db = require('../db/db');
+import Joi from 'joi';
+import prisma from '../db/db.js';
 
-async function createCompany(req, res) {
-    const {
-        nome,
-        empresa_tipo_id,
-        cnpj,
-        responsavel,
-        email,
-        telefone
-    } = req.body;
+const companySchema = Joi.object({
+    nome: Joi.string().required(),
+    empresa_tipo_id: Joi.number().required(),
+    cnpj: Joi.string().length(14).required(),
+    responsavel: Joi.string().required(),
+    email: Joi.string().email().required(),
+    telefone: Joi.string().optional(),
+});
 
-    const created_at = new Date();
-    const updated_at = new Date();
-    const deleted_at = null;
+export const createCompany = async (req, res) => {
+    // Validação dos dados usando Joi
+    const { error, value } = companySchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
 
     try {
-        const [newCompanyId] = await db('empresas').insert({ 
-            nome,
-            empresa_tipo_id,
-            cnpj,
-            responsavel,
-            email,
-            telefone,
-            created_at,
-            updated_at,
-            deleted_at
+        const newCompany = await prisma.empresa.create({
+        data: {
+            ...value, // Usa os dados validados
+            created_at: new Date(),
+            updated_at: new Date(),
+        },
         });
 
-        res.status(201).json({ message: 'Empresa criada com sucesso', company_id: newCompanyId });
+        res.status(201).json({ message: 'Empresa criada com sucesso', company_id: newCompany.id });
     } catch (error) {
         console.error("Erro ao criar empresa:", error);
         res.status(500).json({ message: 'Erro ao criar empresa', error: error.message });
     }
-}
+};
 
-async function getAllCompanies(req, res) {
+// Função para obter todas as empresas com filtros
+export const getAllCompanies = async (req, res) => {
     const { id, nome, empresa_tipo_id, cnpj, responsavel, email, telefone } = req.query;
 
     try {
-        const query = db('empresas')
-            .select('empresas.*', 'empresa_tipos.nome as tipo_nome')
-            .leftJoin('empresa_tipos', 'empresas.empresa_tipo_id', 'empresa_tipos.id')
-            .whereNull('empresas.deleted_at');
+        const companies = await prisma.empresa.findMany({
+            where: {
+                deleted_at: null,
+                AND: [
+                    id ? { id: parseInt(id) } : {},
+                    nome ? { nome: { contains: nome, mode: 'insensitive' } } : {},
+                    empresa_tipo_id ? { empresa_tipo_id: parseInt(empresa_tipo_id) } : {},
+                    cnpj ? { cnpj: { contains: cnpj } } : {},
+                    responsavel ? { responsavel: { contains: responsavel, mode: 'insensitive' } } : {},
+                    email ? { email: { contains: email, mode: 'insensitive' } } : {},
+                    telefone ? { telefone: { contains: telefone } } : {}
+                ],
+            },
+            include: {
+                tipo: true, // Assumindo relação com tabela `empresa_tipos`
+            },
+        });
 
-        if (id) {
-            query.andWhere('empresas.id', id);
-        }
-
-        if (nome) {
-            query.andWhere('empresas.nome', nome);
-        }
-
-        if (empresa_tipo_id) {
-            query.andWhere('empresas.empresa_tipo_id', empresa_tipo_id);
-        }
-
-        if (cnpj) {
-            query.andWhere('empresas.cnpj', cnpj);
-        }
-
-        if (responsavel) {
-            query.andWhere('empresas.responsavel', responsavel);
-        }
-
-        if (email) {
-            query.andWhere('empresas.email', email);
-        }
-
-        if (telefone) {
-            query.andWhere('empresas.telefone', telefone);
-        }
-
-        const companies = await query;
         res.json(companies);
     } catch (error) {
         console.error("Erro ao buscar empresas:", error);
         res.status(500).json({ error: 'Erro ao buscar empresas' });
     }
-}
+};
 
-async function getCompanyById(req, res) {
+// Função para obter uma empresa pelo ID
+export const getCompanyById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const company = await db('empresas')
-            .select('empresas.*', 'empresa_tipos.nome as tipo_nome')
-            .leftJoin('empresa_tipos', 'empresas.empresa_tipo_id', 'empresa_tipos.id')
-            .where('empresas.id', id)
-            .whereNull('empresas.deleted_at')
-            .first();
+        const company = await prisma.empresa.findUnique({
+            where: { id: parseInt(id) },
+            include: {
+                tipo: true, // Inclui o tipo da empresa
+            },
+        });
 
         if (!company) {
             return res.status(404).json({ message: 'Empresa não encontrada' });
@@ -100,61 +85,47 @@ async function getCompanyById(req, res) {
         console.error("Erro ao buscar empresa:", error);
         res.status(500).json({ error: 'Erro ao buscar empresa' });
     }
-}
+};
 
-async function updateCompany(req, res) {
+// Função para atualizar uma empresa
+export const updateCompany = async (req, res) => {
     const { id } = req.params;
     const { nome, empresa_tipo_id, cnpj, responsavel, email, telefone } = req.body;
 
     try {
-        const updated = await db('empresas')
-            .where({ id })
-            .update({
+        const updatedCompany = await prisma.empresa.update({
+            where: { id: parseInt(id) },
+            data: {
                 nome,
                 empresa_tipo_id,
                 cnpj,
                 responsavel,
                 email,
                 telefone,
-                updated_at: new Date()
-            });
-
-        if (!updated) {
-            return res.status(404).json({ message: 'Empresa não encontrada' });
-        }
+                updated_at: new Date(),
+            },
+        });
 
         res.json({ message: 'Empresa atualizada com sucesso' });
     } catch (error) {
         console.error("Erro ao atualizar empresa:", error);
         res.status(500).json({ error: 'Erro ao atualizar empresa' });
     }
-}
+};
 
-async function deleteCompany(req, res) {
+// Função para deletar uma empresa (soft delete)
+export const deleteCompany = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deleted = await db('empresas')
-            .where({ id })
-            .update({
-                deleted_at: new Date()
-            });
-
-        if (!deleted) {
-            return res.status(404).json({ message: 'Empresa não encontrada' });
-        }
+        const deletedCompany = await prisma.empresa.update({
+            where: { id: parseInt(id) },
+            data: { deleted_at: new Date() },
+        });
 
         res.json({ message: 'Empresa deletada com sucesso' });
     } catch (error) {
         console.error("Erro ao deletar empresa:", error);
         res.status(500).json({ error: 'Erro ao deletar empresa' });
     }
-}
-
-module.exports = {
-    createCompany,
-    getAllCompanies,
-    getCompanyById,
-    updateCompany,
-    deleteCompany
 };

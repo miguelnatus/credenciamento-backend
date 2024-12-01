@@ -1,16 +1,32 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const crypto = require('crypto'); // Para gerar o token CSRF
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto'; // Para gerar o token CSRF
+import prisma from '../db/db.js';
+import bcrypt from 'bcryptjs';
+
 const router = express.Router();
 
 const SECRET_KEY = process.env.SECRET_KEY || 'default_secret_key';
 
 // Rota de login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Lógica de autenticação (substitua pela real)
-    if (email === 'user@example.com' && password === '123456') {
+    try {
+        // Busca o usuário no banco de dados pelo email
+        const user = await prisma.users.findUnique({ where: { email } });
+
+        if (!user) {
+            return res.status(401).json({ message: 'Credenciais inválidas' });
+        }
+
+        // Verifica se a senha está correta
+        const passwordMatch = await bcrypt.compare(password, user.senha);
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Credenciais inválidas' });
+        }
+
+        // Gera o token JWT
         const token = jwt.sign({ email }, SECRET_KEY, {
             algorithm: 'HS512',
             expiresIn: '1h',
@@ -35,9 +51,10 @@ router.post('/login', (req, res) => {
         });
 
         return res.status(200).json({ message: 'Login bem-sucedido' });
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+        return res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
     }
-
-    return res.status(401).json({ message: 'Credenciais inválidas' });
 });
 
-module.exports = router;
+export default router;

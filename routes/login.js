@@ -1,9 +1,9 @@
-const express = require('express');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 const router = express.Router();
-const db = require('../db/db'); // Configuração do Knex
-const usuarioController = require('../controllers/usuarioController'); // Importa o usuarioController
+import prisma from '../db/db.js'; // Prisma Client
+import usuarioController from '../controllers/usuarioController.js';
 
 const SECRET_KEY = process.env.SECRET_KEY || 'sua_chave_secreta';
 const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || '1h'; // Tempo de expiração configurável
@@ -18,8 +18,11 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Buscar o usuário no MySQL pelo email
-    const user = await db('users').where({ email }).first();
+    // Buscar o usuário no banco de dados usando Prisma
+    const user = await prisma.users.findUnique({
+      where: { email }
+    });
+
     console.log(user);
 
     if (!user) {
@@ -52,4 +55,4 @@ router.post('/esqueci-senha', usuarioController.forgotPassword);
 // Rota para redefinir senha, sem autenticação
 router.post('/redefinir-senha', usuarioController.resetPassword);
 
-module.exports = router;
+export default router;

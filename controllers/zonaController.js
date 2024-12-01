@@ -1,96 +1,95 @@
-const db = require('../db/db');
+import prisma from '../db/db.js'; // Importação do Prisma Client
+
+// Função para criar uma nova zona
+export const createZona = async (req, res) => {
+    const { nome, descricao } = req.body;
+
+    try {
+        const novaZona = await prisma.zonas.create({
+            data: {
+                nome,
+                descricao,
+                created_at: new Date(),
+                updated_at: new Date(),
+            },
+        });
+
+        res.status(201).json({ message: 'Zona criada com sucesso', id: novaZona.id });
+    } catch (error) {
+        console.error("Erro ao criar zona:", error);
+        res.status(500).json({ error: 'Erro ao criar zona' });
+    }
+};
 
 // Função para obter todas as zonas
-async function getAllZonas(req, res) {
+export const getAllZonas = async (req, res) => {
     try {
-        const zonas = await db('zonas');
+        const zonas = await prisma.zonas.findMany({
+            where: { deleted_at: null },
+        });
+
         res.json(zonas);
     } catch (error) {
         console.error("Erro ao buscar zonas:", error);
         res.status(500).json({ error: 'Erro ao buscar zonas' });
     }
-}
-
-// Função para criar uma nova zona
-async function createZona(req, res) {
-    const { nome, descricao } = req.body;
-
-    try {
-        const [id] = await db('zonas').insert({
-            nome,
-            descricao
-        });
-
-        res.status(201).json({ id });
-    } catch (error) {
-        console.error("Erro ao criar zona:", error);
-        res.status(500).json({ error: 'Erro ao criar zona' });
-    }
-}
+};
 
 // Função para obter uma zona pelo ID
-async function getZonaById(req, res) {
+export const getZonaById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const zona = await db('zonas').where({ id }).first();
-        if (zona) {
-            res.json(zona);
-        } else {
-            res.status(404).json({ error: 'Zona não encontrada' });
+        const zona = await prisma.zonas.findUnique({
+            where: { id: parseInt(id) },
+        });
+
+        if (!zona) {
+            return res.status(404).json({ message: 'Zona não encontrada' });
         }
+
+        res.json(zona);
     } catch (error) {
         console.error("Erro ao buscar zona:", error);
         res.status(500).json({ error: 'Erro ao buscar zona' });
     }
-}
+};
 
 // Função para atualizar uma zona pelo ID
-async function updateZona(req, res) {
+export const updateZona = async (req, res) => {
     const { id } = req.params;
     const { nome, descricao } = req.body;
 
     try {
-        const updated = await db('zonas')
-            .where({ id })
-            .update({
+        const zonaAtualizada = await prisma.zonas.update({
+            where: { id: parseInt(id) },
+            data: {
                 nome,
-                descricao
-            });
+                descricao,
+                updated_at: new Date(),
+            },
+        });
 
-        if (updated) {
-            res.json({ message: 'Zona atualizada com sucesso' });
-        } else {
-            res.status(404).json({ error: 'Zona não encontrada' });
-        }
+        res.json({ message: 'Zona atualizada com sucesso', zonaAtualizada });
     } catch (error) {
         console.error("Erro ao atualizar zona:", error);
         res.status(500).json({ error: 'Erro ao atualizar zona' });
     }
-}
+};
 
-// Função para deletar uma zona pelo ID
-async function deleteZona(req, res) {
+// Função para excluir uma zona (soft delete)
+export const deleteZona = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const deleted = await db('zonas').where({ id }).del();
+        const zonaDeletada = await prisma.zonas.update({
+            where: { id: parseInt(id) },
+            data: { deleted_at: new Date() },
+        });
 
-        if (deleted) {
-            res.json({ message: 'Zona deletada com sucesso' });
-        } else {
-            res.status(404).json({ error: 'Zona não encontrada' });
-        }
+        res.json({ message: 'Zona excluída com sucesso', zonaDeletada });
     } catch (error) {
-        console.error("Erro ao deletar zona:", error);
-        res.status(500).json({ error: 'Erro ao deletar zona' });
+        console.error("Erro ao excluir zona:", error);
+        res.status(500).json({ error: 'Erro ao excluir zona' });
     }
-}
-
-module.exports = {
-    getAllZonas,
-    createZona,
-    getZonaById,
-    updateZona,
-    deleteZona
 };

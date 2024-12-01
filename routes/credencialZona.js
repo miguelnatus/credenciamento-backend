@@ -1,11 +1,18 @@
-const express = require('express');
+import express from 'express';
+import {
+    createCredencialZona,
+    getAllCredenciaisZonas,
+    getZonasByCredencialId,
+    updateCredencialZona,
+    deleteCredencialZona,
+} from '../controllers/credencialZonaController.js';
+
 const router = express.Router();
-const credencialZonaController = require('../controllers/credencialZonaController');
 
-router.post('/', credencialZonaController.createCredencialZona);
-router.get('/', credencialZonaController.getAllCredenciaisZonas);
-router.get('/credencial/:credencial_id', credencialZonaController.getZonasByCredencialId);
-router.put('/:id', credencialZonaController.updateCredencialZona);
-router.delete('/:id', credencialZonaController.deleteCredencialZona);
+router.post('/', createCredencialZona);
+router.get('/', getAllCredenciaisZonas);
+router.get('/credencial/:credencial_id', getZonasByCredencialId);
+router.put('/:id', updateCredencialZona);
+router.delete('/:id', deleteCredencialZona);
 
-module.exports = router;
+export default router;

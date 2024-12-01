@@ -9,4 +9,4 @@ const verifyCsrfToken = (req, res, next) => {
     next();
 };
 
-module.exports = verifyCsrfToken;
+export default verifyCsrfToken;

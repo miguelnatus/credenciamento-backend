@@ -1,11 +1,13 @@
-const express = require('express');
+import express from 'express';
+import { createSetor, getAllSetores, getSetorById, updateSetor, deleteSetor } from '../controllers/setorController.js';
+
 const router = express.Router();
-const setorController = require('../controllers/setorController');
 
-router.post('/', setorController.createSetor);
-router.get('/', setorController.getAllSetores);
-router.get('/:id', setorController.getSetorById);   
-router.put('/:id', setorController.updateSetor);
-router.delete('/:id', setorController.deleteSetor);
+// Rotas para manipulação de setores
+router.post('/', createSetor);
+router.get('/', getAllSetores);
+router.get('/:id', getSetorById);
+router.put('/:id', updateSetor);
+router.delete('/:id', deleteSetor);
 
-module.exports = router;
+export default router;

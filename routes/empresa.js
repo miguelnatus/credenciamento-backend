@@ -1,11 +1,19 @@
-const express = require('express');
+import express from 'express';
+import {
+  createCompany,
+  getAllCompanies,
+  getCompanyById,
+  updateCompany,
+  deleteCompany,
+} from '../controllers/empresaController.js';
+
 const router = express.Router();
-const empresaController = require('../controllers/empresaController');
 
-router.post('/', empresaController.createCompany);
-router.get('/', empresaController.getAllCompanies);
-router.get('/:id', empresaController.getCompanyById);   
-router.put('/:id', empresaController.updateCompany);
-router.delete('/:id', empresaController.deleteCompany);
+// Rotas
+router.post('/', createCompany);
+router.get('/', getAllCompanies);
+router.get('/:id', getCompanyById);
+router.put('/:id', updateCompany);
+router.delete('/:id', deleteCompany);
 
-module.exports = router;
+export default router;

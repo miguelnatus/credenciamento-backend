@@ -1,7 +1,7 @@
 // db/db.js
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 
 // Inicializa o Prisma Client
 const prisma = new PrismaClient();
 
-module.exports = prisma;
+export default prisma; 

@@ -1,15 +1,16 @@
-const express = require('express');
+import express from 'express';
+import {
+  getAllCredenciais,
+  createOrUpdateCredencial,
+  getCredencialById,
+  deleteCredencial,
+} from '../controllers/credencialController.js';
+
 const router = express.Router();
-const credencialController = require('../controllers/credencialController');
 
-// Rotas básicas CRUD
-router.post('/', credencialController.createCredencial);
-router.get('/', credencialController.getAllCredenciais);
-router.get('/:id', credencialController.getCredencialById);
-router.put('/:id', credencialController.updateCredencial);
-router.delete('/:id', credencialController.deleteCredencial);
+router.get('/', getAllCredenciais);
+router.post('/', createOrUpdateCredencial);
+router.get('/:id', getCredencialById);
+router.delete('/:id', deleteCredencial);
 
-// Rota para buscar credencial por pessoa e evento
-router.get('/pessoa/:id/evento/:evento_id', credencialController.getCredencialByPessoaId);
-
-module.exports = router;
+export default router;

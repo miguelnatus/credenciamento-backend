@@ -1,7 +1,9 @@
-const express = require('express');
+import express from 'express';
+import registerUser from '../controllers/registerController.js';
+
 const router = express.Router();
-const registerController = require('../controllers/registerController');
 
-router.post('/', registerController.registerUser);
+// Rota para registrar usuário
+router.post('/', registerUser);
 
-module.exports = router;
+export default router;

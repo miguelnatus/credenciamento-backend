@@ -1,17 +1,23 @@
-const express = require('express');
+import express from 'express';
+import {
+    createPessoa,
+    getAllPessoas,
+    getPessoaById,
+    updatePessoa,
+    deletePessoa,
+    getPessoasByEmpresaId,
+    verificar
+} from '../controllers/pessoaController.js';
+
 const router = express.Router();
-const pessoaController = require('../controllers/pessoaController');
 
+router.post('/', createPessoa);
+router.get('/', getAllPessoas);
+router.get('/:id', getPessoaById);
+router.put('/:id', updatePessoa);
+router.delete('/:id', deletePessoa);
 
+router.get('/empresa/:empresaId', getPessoasByEmpresaId);
+router.get('/verificar/:documento/:tipo', verificar);
 
-router.post('/', pessoaController.createPessoa);
-router.get('/', pessoaController.getAllPessoas);
-router.get('/:id', pessoaController.getPessoaById);
-router.put('/:id', pessoaController.updatePessoa);
-router.delete('/:id', pessoaController.deletePessoa);
-
-router.get('/empresa/:empresaId', pessoaController.getPessoasByEmpresaId);
-
-router.get('/verificar/:documento/:tipo', pessoaController.verificar);
-
-module.exports = router;
+export default router;

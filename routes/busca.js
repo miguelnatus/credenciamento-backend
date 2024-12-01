@@ -1,7 +1,9 @@
-const express = require('express');
+import express from 'express';
+import { search } from '../controllers/buscaController.js'; // Importação corrigida para named exports
+
 const router = express.Router();
-const buscaController = require('../controllers/buscaController');
 
-router.get('/:busca/evento/:evento_id', buscaController.search);
+// Rota para busca
+router.get('/:busca/evento/:evento_id', search);
 
-module.exports = router;
+export default router;

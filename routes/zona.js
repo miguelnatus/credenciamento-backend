@@ -1,11 +1,18 @@
-const express = require('express');
+import express from 'express';
+import {
+    createZona,
+    getAllZonas,
+    getZonaById,
+    updateZona,
+    deleteZona,
+} from '../controllers/zonaController.js';
+
 const router = express.Router();
-const zonaController = require('../controllers/zonaController');
 
-router.post('/', zonaController.createZona);
-router.get('/', zonaController.getAllZonas);
-router.get('/:id', zonaController.getZonaById);   
-router.put('/:id', zonaController.updateZona);
-router.delete('/:id', zonaController.deleteZona);
+router.post('/', createZona);
+router.get('/', getAllZonas);
+router.get('/:id', getZonaById);
+router.put('/:id', updateZona);
+router.delete('/:id', deleteZona);
 
-module.exports = router;
+export default router;

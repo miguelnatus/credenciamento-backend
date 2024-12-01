@@ -1,11 +1,18 @@
-const express = require('express');
+import express from 'express';
+import {
+    createDocumentType,
+    getAllDocumentTypes,
+    getDocumentTypeById,
+    updateDocumentType,
+    deleteDocumentType,
+} from '../controllers/empresaDocumentoController.js';
+
 const router = express.Router();
-const empresaDocumentoController = require('../controllers/empresaDocumentoController');
 
-router.post('/', empresaDocumentoController.createDocumentType);
-router.get('/', empresaDocumentoController.getAllDocumentTypes);
-router.get('/:id', empresaDocumentoController.getDocumentTypeById);
-router.put('/:id', empresaDocumentoController.updateDocumentType);
-router.delete('/:id', empresaDocumentoController.deleteDocumentType);
+router.post('/', createDocumentType);
+router.get('/', getAllDocumentTypes);
+router.get('/:id', getDocumentTypeById);
+router.put('/:id', updateDocumentType);
+router.delete('/:id', deleteDocumentType);
 
-module.exports = router;
+export default router;

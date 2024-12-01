@@ -1,16 +1,14 @@
-const express = require('express');
-const router = express.Router();
-const usuarioController = require('../controllers/usuarioController');
-const authenticateToken = require('../middlewares/authenticateToken');
+import express from 'express';
+import usuarioController from '../controllers/usuarioController.js';
+import authenticateToken from '../middlewares/authenticateToken.js';
 
+const router = express.Router();
 
 
 // Aplicar `authenticateToken` para rotas que precisam de autenticação
 router.use(authenticateToken);
 
-// Outras rotas que exigem autenticação
-
 router.put('/atualizar-perfil', usuarioController.updateProfile);
 router.get('/getAllUsers', usuarioController.getAllUsers);
 
-module.exports = router;
+export default router;

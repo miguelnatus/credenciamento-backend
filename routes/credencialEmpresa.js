@@ -1,13 +1,21 @@
-const express = require('express');
+import express from 'express';
+import {
+    createCredencialEmpresa,
+    getAllCredenciaisEmpresa,
+    searchCredenciaisEmpresa,
+    updateCredencialEmpresa,
+    deleteCredencialEmpresa,
+    mostraSetoresDisponiveis
+} from '../controllers/credencialEmpresaController.js';
+
 const router = express.Router();
-const credencialEmpresaController = require('../controllers/credencialEmpresaController');
 
-router.post('/', credencialEmpresaController.createCredencialEmpresa);
-router.get('/', credencialEmpresaController.getAllCredenciaisEmpresa);
-router.get('/:empresa_id/:evento_id', credencialEmpresaController.searchCredenciaisEmpresa);
-router.put('/:id', credencialEmpresaController.updateCredencialEmpresa);
-router.delete('/:id', credencialEmpresaController.deleteCredencialEmpresa);
+router.post('/', createCredencialEmpresa);
+router.get('/', getAllCredenciaisEmpresa);
+router.get('/:empresa_id/:evento_id', searchCredenciaisEmpresa);
+router.put('/:id', updateCredencialEmpresa);
+router.delete('/:id', deleteCredencialEmpresa);
 
-router.get('/mostraSetoresDisponiveis/:empresa_id/:evento_id', credencialEmpresaController.mostraSetoresDisponiveis);
+router.get('/mostraSetoresDisponiveis/:empresa_id/:evento_id', mostraSetoresDisponiveis);
 
-module.exports = router;
+export default router;

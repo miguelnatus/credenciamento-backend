@@ -1,30 +1,41 @@
+import prisma from '../db/db.js'; // Configuração do Prisma
 
-const db = require('../db/db');
-
-async function createDocumentType(req, res) {
+// Função para criar um novo tipo de documento
+export async function createDocumentType(req, res) {
     const { arquivo, tamanho, tipo_arquivo } = req.body;
-    
+
     try {
-        const [newDocTypeId] = await db('empresa_documentos').insert({
-            arquivo,
-            tamanho,
-            tipo_arquivo,
-            created_at: new Date(),
-            updated_at: new Date()
+        const newDocType = await prisma.empresa_documentos.create({
+            data: {
+                arquivo,
+                tamanho,
+                tipo_arquivo,
+                created_at: new Date(),
+                updated_at: new Date(),
+            },
         });
-        
-        res.status(201).json({ message: 'Documento criado com sucesso', documento_id: newDocTypeId });
+
+        res.status(201).json({ message: 'Documento criado com sucesso', documento_id: newDocType.id });
     } catch (error) {
         console.error("Erro ao criar documento:", error);
         res.status(500).json({ error: 'Erro ao criar documento' });
     }
 }
 
-async function getAllDocumentTypes(req, res) {
+// Função para obter todos os tipos de documentos
+export async function getAllDocumentTypes(req, res) {
     try {
-        const documents = await db('empresa_documentos')
-            .whereNull('deleted_at')
-            .select('id', 'arquivo', 'tamanho', 'tipo_arquivo');
+        const documents = await prisma.empresa_documentos.findMany({
+            where: {
+                deleted_at: null,
+            },
+            select: {
+                id: true,
+                arquivo: true,
+                tamanho: true,
+                tipo_arquivo: true,
+            },
+        });
         res.json(documents);
     } catch (error) {
         console.error("Erro ao buscar documentos:", error);
@@ -32,15 +43,20 @@ async function getAllDocumentTypes(req, res) {
     }
 }
 
-async function getDocumentTypeById(req, res) {
+// Função para obter um tipo de documento pelo ID
+export async function getDocumentTypeById(req, res) {
     const { id } = req.params;
 
     try {
-        const document = await db('empresa_documentos')
-            .where({ id })
-            .whereNull('deleted_at')
-            .select('id', 'arquivo', 'tamanho', 'tipo_arquivo')
-            .first();
+        const document = await prisma.empresa_documentos.findUnique({
+            where: { id: parseInt(id) },
+            select: {
+                id: true,
+                arquivo: true,
+                tamanho: true,
+                tipo_arquivo: true,
+            },
+        });
 
         if (!document) {
             return res.status(404).json({ message: 'Documento não encontrado' });
@@ -53,23 +69,21 @@ async function getDocumentTypeById(req, res) {
     }
 }
 
-async function updateDocumentType(req, res) {
+// Função para atualizar um tipo de documento
+export async function updateDocumentType(req, res) {
     const { id } = req.params;
     const { arquivo, tamanho, tipo_arquivo } = req.body;
 
     try {
-        const updated = await db('empresa_documentos')
-            .where({ id })
-            .update({
+        const updatedDocument = await prisma.empresa_documentos.update({
+            where: { id: parseInt(id) },
+            data: {
                 arquivo,
                 tamanho,
                 tipo_arquivo,
-                updated_at: new Date()
-            });
-
-        if (!updated) {
-            return res.status(404).json({ message: 'Documento não encontrado' });
-        }
+                updated_at: new Date(),
+            },
+        });
 
         res.json({ message: 'Documento atualizado com sucesso' });
     } catch (error) {
@@ -78,20 +92,18 @@ async function updateDocumentType(req, res) {
     }
 }
 
-async function deleteDocumentType(req, res) {
+// Função para excluir um tipo de documento (soft delete)
+export async function deleteDocumentType(req, res) {
     const { id } = req.params;
 
     try {
-        const deleted = await db('empresa_documentos')
-            .where({ id })
-            .update({ 
+        const deletedDocument = await prisma.empresa_documentos.update({
+            where: { id: parseInt(id) },
+            data: {
                 deleted_at: new Date(),
-                updated_at: new Date()
-            });
-
-        if (!deleted) {
-            return res.status(404).json({ message: 'Documento não encontrado' });
-        }
+                updated_at: new Date(),
+            },
+        });
 
         res.json({ message: 'Documento excluído com sucesso' });
     } catch (error) {
@@ -99,11 +111,3 @@ async function deleteDocumentType(req, res) {
         res.status(500).json({ error: 'Erro ao excluir documento' });
     }
 }
-
-module.exports = {
-    createDocumentType,
-    getAllDocumentTypes,
-    getDocumentTypeById,
-    updateDocumentType,
-    deleteDocumentType
-};

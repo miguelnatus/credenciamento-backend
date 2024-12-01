@@ -1,49 +1,58 @@
-const express = require('express');
-const rateLimit = require('express-rate-limit'); // Importa express-rate-limit
-const router = express.Router();
-const authenticateToken = require('../middlewares/authenticateToken');
-const verifyCsrfToken = require('../middlewares/verifyCsrfToken'); // Importa o middleware para CSRF
+import express from 'express';
+import rateLimit from 'express-rate-limit'; // Middleware para limitar requisições
+import authenticateToken from '../middlewares/authenticateToken.js'; // Middleware para autenticação
+import verifyCsrfToken from '../middlewares/verifyCsrfToken.js'; // Middleware para CSRF
 
-// Rotas individuais
-const loginRoutes = require('./login');
-const registerRoutes = require('./register');
-const authRoutes = require('./auth'); // Importa as rotas de autenticação
-const usuarioRoutes = require('./usuario');
-const eventoRoutes = require('./evento');
-const produtoraRoutes = require('./produtora');
-const empresaRoutes = require('./empresa');
-const setorRoutes = require('./setor');
-const zonaRoutes = require('./zona');
-const credencialRoutes = require('./credenciais');
-const credencialZonaRoutes = require('./credencialZona');
-const credencialEmpresaRoutes = require('./credencialEmpresa');
-const credencialEmpresaZonaRoutes = require('./credencialEmpresaZonas');
-const pessoaRoutes = require('./pessoa');
-const refreshTokenRoutes = require('./refresh-token');
-const buscaRoutes = require('./busca');
-const empresaDocumentoRoutes = require('./empresaDocumento');
+// Importação de rotas públicas
+import loginRoutes from './login.js';
+import registerRoutes from './register.js';
+import authRoutes from './auth.js';
+import refreshTokenRoutes from './refresh-token.js';
+
+// Importação de rotas protegidas
+import usuarioRoutes from './usuario.js';
+import eventoRoutes from './evento.js';
+import produtoraRoutes from './produtora.js';
+import empresaRoutes from './empresa.js';
+import setorRoutes from './setor.js';
+import zonaRoutes from './zona.js';
+import credencialRoutes from './credenciais.js';
+import credencialZonaRoutes from './credencialZona.js';
+import credencialEmpresaRoutes from './credencialEmpresa.js';
+import credencialEmpresaZonaRoutes from './credencialEmpresaZonas.js';
+import pessoaRoutes from './pessoa.js';
+import buscaRoutes from './busca.js';
+import empresaDocumentoRoutes from './empresaDocumento.js';
 
 // Configuração do rate limiter para login e registro
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 10, // Limita a 10 requisições por IP nesse intervalo
-    message: { message: 'Muitas tentativas de login ou registro. Tente novamente mais tarde.' },
-    standardHeaders: true, // Envia informações de limite nos headers RateLimit-*
-    legacyHeaders: false, // Desativa os headers X-RateLimit-*
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10, // Limita a 10 requisições por IP nesse intervalo
+  message: { message: 'Muitas tentativas de login ou registro. Tente novamente mais tarde.' },
+  standardHeaders: true, // Envia informações de limite nos headers RateLimit-*
+  legacyHeaders: false, // Desativa os headers X-RateLimit-*
 });
 
-// Rota inicial para verificar a API
+// Inicializa o roteador
+const router = express.Router();
+
+// Rota inicial para verificar se a API está funcionando
 router.get('/', (req, res) => {
-    res.send('API funcionando');
+  res.send('API funcionando');
 });
 
-// Rotas públicas com rate limiter
-router.use('/login', authLimiter, loginRoutes); // Aplica o rate limiter ao login
-router.use('/register', authLimiter, registerRoutes); // Aplica o rate limiter ao registro
+// Rota de saúde para monitoramento
+router.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: Date.now() });
+});
+
+// Rotas públicas com rate limiter aplicado
+router.use('/login', authLimiter, loginRoutes);
+router.use('/register', authLimiter, registerRoutes);
 router.use('/auth', authRoutes);
 router.use('/refresh-token', refreshTokenRoutes);
 
-// Rotas protegidas com validação de CSRF e autenticação
+// Rotas protegidas com autenticação e CSRF
 router.use('/usuario', verifyCsrfToken, authenticateToken, usuarioRoutes);
 router.use('/eventos', verifyCsrfToken, authenticateToken, eventoRoutes);
 router.use('/produtoras', verifyCsrfToken, authenticateToken, produtoraRoutes);
@@ -58,4 +67,4 @@ router.use('/pessoas', verifyCsrfToken, authenticateToken, pessoaRoutes);
 router.use('/busca', verifyCsrfToken, authenticateToken, buscaRoutes);
 router.use('/empresadocumento', verifyCsrfToken, authenticateToken, empresaDocumentoRoutes);
 
-module.exports = router;
+export default router;

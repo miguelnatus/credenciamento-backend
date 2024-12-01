@@ -1,22 +1,25 @@
-const db = require('../db/db');
+import prisma from '../db/db.js'; // Configuração do Prisma
 
+// Função para criar um evento
 async function createEvent(req, res) {
     const { grupo_id, nome, local, data_evento, inicio_credenciamento, fim_credenciamento, descricao } = req.body;
-    
+
     try {
-        const [newEventId] = await db('eventos').insert({
-            grupo_id,
-            nome,
-            local,
-            data_evento,
-            inicio_credenciamento,
-            fim_credenciamento,
-            descricao,
-            created_at: new Date(),
-            updated_at: new Date()
+        const newEvent = await prisma.eventos.create({
+            data: {
+                grupo_id,
+                nome,
+                local,
+                data_evento,
+                inicio_credenciamento,
+                fim_credenciamento,
+                descricao,
+                created_at: new Date(),
+                updated_at: new Date(),
+            },
         });
-        
-        res.status(201).json({ message: 'Evento criado com sucesso', event_id: newEventId });
+
+        res.status(201).json({ message: 'Evento criado com sucesso', event_id: newEvent.id });
     } catch (error) {
         console.error("Erro ao criar evento:", error);
         res.status(500).json({ error: 'Erro ao criar o evento' });
@@ -28,13 +31,13 @@ async function getAllEvents(req, res) {
     const { grupo_id } = req.query; // Suporta filtros opcionais
 
     try {
-        const query = db('eventos').whereNull('deleted_at');
+        const events = await prisma.eventos.findMany({
+            where: {
+                deleted_at: null,
+                grupo_id: grupo_id || undefined,
+            },
+        });
 
-        if (grupo_id) {
-            query.andWhere({ grupo_id });
-        }
-
-        const events = await query;
         res.json(events);
     } catch (error) {
         console.error("Erro ao buscar eventos:", error);
@@ -47,7 +50,19 @@ async function getEventById(req, res) {
     const { id } = req.params;
 
     try {
-        const event = await db('eventos').where({ id }).whereNull('deleted_at').first();
+        const event = await prisma.eventos.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                grupo_id: true,
+                nome: true,
+                local: true,
+                data_evento: true,
+                inicio_credenciamento: true,
+                fim_credenciamento: true,
+                descricao: true,
+            }
+        });
 
         if (!event) {
             return res.status(404).json({ message: 'Evento não encontrado' });
@@ -66,9 +81,9 @@ async function updateEvent(req, res) {
     const { grupo_id, nome, local, data_evento, inicio_credenciamento, fim_credenciamento, descricao } = req.body;
 
     try {
-        const updated = await db('eventos')
-            .where({ id })
-            .update({
+        const updatedEvent = await prisma.eventos.update({
+            where: { id },
+            data: {
                 grupo_id,
                 nome,
                 local,
@@ -76,12 +91,9 @@ async function updateEvent(req, res) {
                 inicio_credenciamento,
                 fim_credenciamento,
                 descricao,
-                updated_at: new Date()
-            });
-
-        if (!updated) {
-            return res.status(404).json({ message: 'Evento não encontrado para atualização' });
-        }
+                updated_at: new Date(),
+            },
+        });
 
         res.json({ message: 'Evento atualizado com sucesso' });
     } catch (error) {
@@ -90,16 +102,15 @@ async function updateEvent(req, res) {
     }
 }
 
-// Função para excluir um evento
+// Função para excluir um evento (soft delete)
 async function deleteEvent(req, res) {
     const { id } = req.params;
 
     try {
-        const deleted = await db('eventos').where({ id }).update({ deleted_at: new Date() });
-
-        if (!deleted) {
-            return res.status(404).json({ message: 'Evento não encontrado para exclusão' });
-        }
+        const deletedEvent = await prisma.eventos.update({
+            where: { id },
+            data: { deleted_at: new Date() },
+        });
 
         res.json({ message: 'Evento excluído com sucesso' });
     } catch (error) {
@@ -108,7 +119,7 @@ async function deleteEvent(req, res) {
     }
 }
 
-module.exports = {
+export {
     createEvent,
     getAllEvents,
     getEventById,
