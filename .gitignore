@@ -3,5 +3,5 @@
 .env.local
 .env.development
 .env.test
-package-lock.json
+# package-lock.json
 tree.txt
