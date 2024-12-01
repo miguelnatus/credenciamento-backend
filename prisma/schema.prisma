@@ -238,14 +238,16 @@ model setores {
 }
 
 model users {
-  id         Int       @id @default(autoincrement()) @db.UnsignedInt
+  id         Int       @id @default(autoincrement())
   nome       String    @db.VarChar(255)
-  email      String    @unique(map: "users_email_unique") @db.VarChar(255)
+  email      String    @unique
   senha      String    @db.VarChar(255)
-  created_at DateTime  @default(now()) @db.Timestamp(0)
-  updated_at DateTime  @default(now()) @db.Timestamp(0)
-  deleted_at DateTime? @db.Timestamp(0)
+  role       String    @default("user") // "user", "admin", "supervisor"
+  created_at DateTime  @default(now())
+  updated_at DateTime  @default(now())
+  deleted_at DateTime?
 }
+
 
 model veiculos {
   id          Int           @id @default(autoincrement()) @db.UnsignedInt

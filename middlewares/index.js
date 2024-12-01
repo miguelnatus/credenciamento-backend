@@ -1,53 +1,20 @@
-import rateLimit from 'express-rate-limit';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import express from 'express';
-import path from 'path';
+import { configureCors } from './corsConfig.js';
+import { globalRateLimiter } from './rateLimiter.js';
+import { serveStaticFiles } from './staticFiles.js';
+import { errorHandler } from './errorHandler.js';
 
 export const configureMiddlewares = (app) => {
-  // Middleware para servir imagens estáticas
-  app.use('/images', express.static(path.join(process.cwd(), 'images')));
+  // Middleware para servir arquivos estáticos
+  serveStaticFiles(app);
 
-  // Rate Limiter Global
-  const globalLimiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minuto
-    max: 1000, // Permite 1000 requisições por minuto
-    message: {
-      status: 429,
-      message: 'Muitas requisições. Tente novamente mais tarde.',
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-  app.use(globalLimiter);
+  // Middleware de Rate Limiter Global
+  app.use(globalRateLimiter);
 
-  // Configuração de CORS com múltiplas origens
-  const allowedOrigins = [
-    'http://localhost:3000', // Ambiente de desenvolvimento
-    'https://credenciamento.pro',   // Ambiente de produção
-  ];
-
-  app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Não permitido pelo CORS'));
-      }
-    },
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  }));
-
-  // Middlewares gerais
-  app.use(express.json());
-  app.use(cookieParser());
+  // Configuração de CORS
+  configureCors(app);
 };
 
-// Middleware para tratamento de erros
-export const errorHandler = (err, req, res, next) => {
-  console.error(err.message); // Log do erro
-  res.status(err.status || 500).json({
-    error: err.message || 'Erro interno do servidor',
-  });
-};
+// Exporta o middleware de autenticação para ser usado manualmente nas rotas
+export { errorHandler };
+export { default as authenticateToken } from './authenticateToken.js';
+

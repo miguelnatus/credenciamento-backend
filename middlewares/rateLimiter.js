@@ -1,12 +1,12 @@
 import rateLimit from 'express-rate-limit';
 
-// Configuração básica de Rate Limiting
-const limiter = rateLimit({
+export const globalRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 100, // Máximo de 100 requisições por IP
-  message: { message: 'Muitas requisições. Por favor, tente novamente mais tarde.' }, // Mensagem de erro
-  standardHeaders: true, // Retorna informações de limite nos headers `RateLimit-*`
-  legacyHeaders: false, // Desativa os headers `X-RateLimit-*` antigos
+  max: 1000, // Permite 1000 requisições por minuto
+  message: {
+    status: 429,
+    message: 'Muitas requisições. Tente novamente mais tarde.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-
-export default limiter;

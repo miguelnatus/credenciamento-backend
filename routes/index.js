@@ -1,6 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit'; // Middleware para limitar requisições
-import authenticateToken from '../middlewares/authenticateToken.js'; // Middleware para autenticação
+import { authenticateToken } from '../middlewares/index.js'; // Middleware para autenticação
 import verifyCsrfToken from '../middlewares/verifyCsrfToken.js'; // Middleware para CSRF
 
 // Importação de rotas públicas
@@ -46,7 +46,7 @@ router.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: Date.now() });
 });
 
-// Rotas públicas com rate limiter aplicado
+// Rotas públicas (sem autenticação)
 router.use('/login', authLimiter, loginRoutes);
 router.use('/register', authLimiter, registerRoutes);
 router.use('/auth', authRoutes);

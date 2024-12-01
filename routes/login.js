@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto'; // Para gerar o CSRF token
 const router = express.Router();
 import prisma from '../db/db.js'; // Prisma Client
 import usuarioController from '../controllers/usuarioController.js';
@@ -10,41 +11,68 @@ const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || '1h'; // Tempo de expir
 
 // Rota de login
 router.post('/', async (req, res) => {
-  const { email, password } = req.body;
-
-  // Verificação inicial de campos
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email e senha são obrigatórios' });
-  }
-
   try {
-    // Buscar o usuário no banco de dados usando Prisma
-    const user = await prisma.users.findUnique({
-      where: { email }
-    });
+    console.log('Headers recebidos:', req.headers);
+    console.log('Body recebido:', req.body);
 
-    console.log(user);
+    const { email, password } = req.body;
+
+    // Validação inicial dos campos
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email e senha são obrigatórios' });
+    }
+
+    // Busca o usuário no banco de dados
+    const user = await prisma.users.findUnique({ where: { email } });
 
     if (!user) {
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
 
-    // Verificar se a senha está correta
-    const passwordMatch = await bcrypt.compare(password, user.senha);
-    if (!passwordMatch) {
+    // Verifica se a senha fornecida corresponde à senha armazenada
+    const isPasswordValid = await bcrypt.compare(password, user.senha);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: 'Credenciais inválidas' });
     }
 
-    // Gerar o token JWT com informações adicionais
+    // Gera o token JWT com informações do usuário
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role || 'user' },
       SECRET_KEY,
       { expiresIn: TOKEN_EXPIRATION }
     );
 
-    res.json({ token });
+    console.log('Token gerado:', token);
+
+    // Gera um token CSRF
+    const csrfToken = crypto.randomBytes(32).toString('hex');
+
+    // Configura o cookie HTTP-Only para o token JWT
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    // Configura o cookie acessível ao frontend para o token CSRF
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false, // Acessível ao frontend
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    // Retorna os dados do usuário e o token CSRF
+    res.status(200).json({
+      message: 'Login bem-sucedido',
+      csrfToken, // Retorna o token CSRF no corpo também, caso necessário
+      user: {
+        id: user.id,
+        email: user.email,
+        nome: user.nome,
+      },
+    });
   } catch (error) {
-    console.error('Erro ao fazer login:', error.message);
+    console.error('Erro ao processar login:', error);
     res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
   }
 });

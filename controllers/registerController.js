@@ -1,3 +1,11 @@
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto'; // Para gerar o CSRF token
+const router = express.Router();
+import prisma from '../db/db.js'; // Prisma Client
+import usuarioController from '../controllers/usuarioController.js';
+
 const registerUser = async (req, res) => {
   const { nome, password, email } = req.body;
 
