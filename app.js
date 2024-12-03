@@ -1,51 +1,28 @@
-import express from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
-import routes from './routes/index.js';
+import express from "express";
+import cookieParser from "cookie-parser";
+import { configureCors } from "./middlewares/corsConfig.js"; // Certifique-se que o caminho está correto
+import routes from "./routes/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middleware para CORS
-app.use(
-  cors({
-    origin: ['http://localhost:3000', 'https://credenciamento.pro'], // Domínios permitidos
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-    credentials: true, // Permite envio de cookies
-  })
-);
-
-// Middleware para parse de JSON
+// Middlewares
+configureCors(app); // Configurar CORS primeiro
 app.use(express.json());
-
-// Middleware para parse de cookies
 app.use(cookieParser());
 
-// Middleware para debug de requisições (opcional)
-app.use((req, res, next) => {
-  console.log('Método:', req.method);
-  console.log('Rota acessada:', req.originalUrl);
-  console.log('Headers recebidos:', req.headers);
-  console.log('Cookies recebidos:', req.cookies);
-  console.log('Body recebido:', req.body);
-  next();
+// Rotas
+app.use("/api", routes);
+
+// Erros
+app.use((req, res) => {
+  res.status(404).json({ error: "Rota não encontrada" });
+});
+app.use((err, req, res) => {
+  console.error("Erro interno do servidor:", err);
+  res.status(500).json({ error: err.message || "Erro interno do servidor" });
 });
 
-// Configuração de rotas
-app.use('/api', routes);
-
-// Middleware para capturar rotas não encontradas
-app.use((req, res, next) => {
-  res.status(404).json({ error: 'Rota não encontrada' });
-});
-
-// Middleware para tratar erros (manter no final)
-app.use((err, req, res, next) => {
-  console.error('Erro interno do servidor:', err.message);
-  res.status(err.status || 500).json({ error: err.message || 'Erro interno do servidor' });
-});
-
-// Inicializa o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

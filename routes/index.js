@@ -52,19 +52,24 @@ router.use('/register', authLimiter, registerRoutes);
 router.use('/auth', authRoutes);
 router.use('/refresh-token', refreshTokenRoutes);
 
+// Função para aplicar middlewares em rotas protegidas
+const applyProtectedRoute = (path, routes) => {
+  router.use(path, authenticateToken, verifyCsrfToken, routes);
+};
+
 // Rotas protegidas com autenticação e CSRF
-router.use('/usuario', verifyCsrfToken, authenticateToken, usuarioRoutes);
-router.use('/eventos', verifyCsrfToken, authenticateToken, eventoRoutes);
-router.use('/produtoras', verifyCsrfToken, authenticateToken, produtoraRoutes);
-router.use('/empresas', verifyCsrfToken, authenticateToken, empresaRoutes);
-router.use('/setores', verifyCsrfToken, authenticateToken, setorRoutes);
-router.use('/zonas', verifyCsrfToken, authenticateToken, zonaRoutes);
-router.use('/credenciais', verifyCsrfToken, authenticateToken, credencialRoutes);
-router.use('/credencialzona', verifyCsrfToken, authenticateToken, credencialZonaRoutes);
-router.use('/credencialempresa', verifyCsrfToken, authenticateToken, credencialEmpresaRoutes);
-router.use('/credencialempresazona', verifyCsrfToken, authenticateToken, credencialEmpresaZonaRoutes);
-router.use('/pessoas', verifyCsrfToken, authenticateToken, pessoaRoutes);
-router.use('/busca', verifyCsrfToken, authenticateToken, buscaRoutes);
-router.use('/empresadocumento', verifyCsrfToken, authenticateToken, empresaDocumentoRoutes);
+applyProtectedRoute('/usuario', usuarioRoutes);
+applyProtectedRoute('/eventos', eventoRoutes);
+applyProtectedRoute('/produtoras', produtoraRoutes);
+applyProtectedRoute('/empresas', empresaRoutes);
+applyProtectedRoute('/setores', setorRoutes);
+applyProtectedRoute('/zonas', zonaRoutes);
+applyProtectedRoute('/credenciais', credencialRoutes);
+applyProtectedRoute('/credencialzona', credencialZonaRoutes);
+applyProtectedRoute('/credencialempresa', credencialEmpresaRoutes);
+applyProtectedRoute('/credencialempresazona', credencialEmpresaZonaRoutes);
+applyProtectedRoute('/pessoas', pessoaRoutes);
+applyProtectedRoute('/busca', buscaRoutes);
+applyProtectedRoute('/empresadocumento', empresaDocumentoRoutes);
 
 export default router;
