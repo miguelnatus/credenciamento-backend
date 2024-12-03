@@ -50,7 +50,8 @@ router.get('/health', (req, res) => {
 router.use('/login', authLimiter, loginRoutes);
 router.use('/register', authLimiter, registerRoutes);
 router.use('/auth', authRoutes);
-router.use('/refresh-token', refreshTokenRoutes);
+router.use("/refresh-token", refreshTokenRoutes);
+
 
 // Função para aplicar middlewares em rotas protegidas
 const applyProtectedRoute = (path, routes) => {

@@ -16,7 +16,8 @@ export const getAllProdutoras = async (req, res) => {
 // Função para criar uma nova produtora
 export const createProdutora = async (req, res) => {
   const { nome, descricao } = req.body;
-
+  console.log("Dados recebidos no backend:", req.body);
+  console.log("Usuário autenticado:", req.user);
   try {
     const newProdutora = await prisma.produtoras.create({
       data: {

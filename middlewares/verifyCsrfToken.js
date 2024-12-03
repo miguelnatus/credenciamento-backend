@@ -1,13 +1,12 @@
-const verifyCsrfToken = (req, res, next) => {
-    const csrfToken = req.cookies?.csrf_token; // Obtém o token CSRF do cookie
-    const csrfHeader = req.headers['x-csrf-token']; // Obtém o token CSRF do cabeçalho
-  
-    if (!csrfToken || !csrfHeader || csrfToken !== csrfHeader) {
-      return res.status(403).json({ message: 'Token CSRF inválido ou ausente' });
-    }
-  
-    next();
-  };
-  
-  export default verifyCsrfToken;
-  
+export const verifyCsrfToken = (req, res, next) => {
+  const csrfToken = req.cookies?.csrf_token;
+  const csrfHeader = req.headers["x-csrf-token"];
+
+  if (!csrfToken || csrfToken !== csrfHeader) {
+    console.error("[CSRF] Token CSRF inválido ou ausente.");
+    return res.status(403).json({ error: "Acesso negado: CSRF token inválido." });
+  }
+
+  console.log("[CSRF] Token CSRF válido.");
+  next();
+};

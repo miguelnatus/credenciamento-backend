@@ -1,30 +1,25 @@
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 
-dotenv.config();
+const SECRET_KEY = process.env.SECRET_KEY || "default_secret_key";
 
-const SECRET_KEY = process.env.SECRET_KEY;
-
-function authenticateToken(req, res, next) {
-  console.log("SECRET_KEY:", SECRET_KEY);
-  console.log("Rota acessada:", req.originalUrl);
-  console.log("Cookies recebidos:", req.cookies);
-
-  const token = req.cookies?.auth_token;
-  console.log("Token recebido:", token);
+export const authenticateToken = (req, res, next) => {
+  console.log("[Auth] Middleware de autenticação acionado.");
+  
+  const token = req.cookies?.auth_token; // Obtém o token do cookie
 
   if (!token) {
-    return res.status(403).json({ error: "Acesso negado: Token não fornecido" });
+    console.error("[Auth] Cookie 'auth_token' não encontrado.");
+    return res.status(403).json({ error: "Acesso negado: Token não fornecido." });
   }
 
-  jwt.verify(token, SECRET_KEY, { algorithms: ["HS512"] }, (err, user) => {
+  jwt.verify(token, SECRET_KEY, (err, user) => {
     if (err) {
-      console.error("[Erro] Token inválido:", err.message);
-      return res.status(403).json({ error: "Acesso negado: Token inválido" });
+      console.error("[Auth] Token inválido ou expirado:", err.message);
+      return res.status(403).json({ error: "Acesso negado: Token inválido ou expirado." });
     }
-    req.user = user;
+
+    req.user = user; // Adiciona os dados do usuário à requisição
+    console.log("[Auth] Usuário autenticado:", user);
     next();
   });
-}
-
-export default authenticateToken; // Certifique-se de exportar como `default`
+};

@@ -1,58 +1,46 @@
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import express from "express";
+import jwt from "jsonwebtoken";
+
 const router = express.Router();
-import prisma from '../db/db.js'; // Prisma Client
-import usuarioController from '../controllers/usuarioController.js';
 
-const SECRET_KEY = process.env.SECRET_KEY || 'sua_chave_secreta';
-const TOKEN_EXPIRATION = process.env.TOKEN_EXPIRATION || '1h'; // Tempo de expiração configurável
+const SECRET_KEY = process.env.SECRET_KEY || "default_secret_key";
 
-// Rota de login
-router.post('/', async (req, res) => {
-  const { email, password } = req.body;
+// Endpoint para renovação do token
+router.post("/", (req, res) => {
+  const token = req.cookies?.auth_token;
 
-  // Verificação inicial de campos
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Email e senha são obrigatórios' });
+  // Verifica se o token está presente
+  if (!token) {
+    return res.status(403).json({ error: "Token ausente. Faça login novamente." });
   }
 
-  try {
-    // Buscar o usuário no banco de dados usando Prisma
-    const user = await prisma.users.findUnique({
-      where: { email }
-    });
-
-    console.log(user);
-
-    if (!user) {
-      return res.status(401).json({ message: 'Credenciais inválidas' });
+  // Verifica o token
+  jwt.verify(token, SECRET_KEY, (err, user) => {
+    if (err) {
+      console.error("Erro ao validar token:", err.message);
+      return res.status(403).json({ error: "Token inválido ou expirado. Faça login novamente." });
     }
 
-    // Verificar se a senha está correta
-    const passwordMatch = await bcrypt.compare(password, user.senha);
-    if (!passwordMatch) {
-      return res.status(401).json({ message: 'Credenciais inválidas' });
-    }
-
-    // Gerar o token JWT com informações adicionais
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role || 'user' },
+    // Gera um novo token com os mesmos dados do token original
+    const newToken = jwt.sign(
+      { id: user.id, email: user.email, role: user.role || "user" },
       SECRET_KEY,
-      { expiresIn: TOKEN_EXPIRATION }
+      {
+        algorithm: "HS512",
+        expiresIn: "1h", // Define o tempo de expiração do novo token
+      }
     );
 
-    res.json({ token });
-  } catch (error) {
-    console.error('Erro ao fazer login:', error.message);
-    res.status(500).json({ message: 'Erro no servidor. Tente novamente mais tarde.' });
-  }
+    // Configura o cookie com o novo token
+    res.cookie("auth_token", newToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 1000, // Expira em 1 hora
+    });
+
+    return res.status(200).json({ message: "Token renovado com sucesso" });
+  });
 });
-
-// Rota para recuperação de senha, sem autenticação
-router.post('/esqueci-senha', usuarioController.forgotPassword);
-
-// Rota para redefinir senha, sem autenticação
-router.post('/redefinir-senha', usuarioController.resetPassword);
 
 export default router;
